@@ -13,7 +13,7 @@ class SearchService
 {
     /**
      * Pencarian dasar dengan dukungan PostgreSQL Full-Text Search (FTS) bila tersedia.
-     * Kolom dicari: arabic_text, translation, interpretation; narration_source via LIKE.
+     * Kolom dicari: arabic_text, translation, footnotes.
      *
      * @param string $query
      * @param int $limit
@@ -37,11 +37,9 @@ class SearchService
             'query' => $query,
             'limit' => $limit,
             'chapter_id' => $chapterId,
-            'narration_source' => $narrationSource,
             'types' => [
                 'query' => gettype($query),
                 'chapter_id' => gettype($chapterId),
-                'narration_source' => gettype($narrationSource),
             ],
         ]);
 
@@ -50,10 +48,7 @@ class SearchService
             $builder->where('chapter_id', $chapterId);
         }
 
-        // Filter sumber periwayatan jika disediakan
-        if ($narrationSource !== null) {
-            $builder->where('narration_source', 'like', '%' . $narrationSource . '%');
-        }
+        // Sumber periwayatan dihapus dari spesifikasi; tidak ada filter narration_source.
 
         if ($driver === 'pgsql') {
             // PostgreSQL FTS menggunakan plainto_tsquery untuk pencarian natural
@@ -61,10 +56,9 @@ class SearchService
             // Kelompokkan FTS dan sumber periwayatan agar tunduk pada filter lain (mis. chapter_id)
             $builder->where(function ($q) use ($query) {
                 $q->whereRaw(
-                    "to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(interpretation,'')) @@ plainto_tsquery('simple', ?)",
+                    "to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(footnotes,'')) @@ plainto_tsquery('simple', ?)",
                     [$query]
-                )
-                ->orWhere('narration_source', 'ilike', '%' . $query . '%');
+                );
             })
             ->addSelect(DB::raw($this->tsRankExpression($query) . ' AS relevance'))
             ->orderByDesc('relevance');
@@ -73,8 +67,7 @@ class SearchService
             $builder->where(function ($q) use ($query) {
                 $q->where('arabic_text', 'like', '%' . $query . '%')
                     ->orWhere('translation', 'like', '%' . $query . '%')
-                    ->orWhere('interpretation', 'like', '%' . $query . '%')
-                    ->orWhere('narration_source', 'like', '%' . $query . '%');
+                    ->orWhere('footnotes', 'like', '%' . $query . '%');
             })
             ->orderByDesc($this->likeRelevanceExpression($query));
         }
@@ -119,13 +112,10 @@ class SearchService
             'limit' => $limit,
             'chapter_id_raw' => $rawChapter,
             'chapter_id_normalized' => $chapterId,
-            'narration_source_raw' => $rawSource,
-            'narration_source_normalized' => $narrationSource,
             'mode' => $mode,
             'types' => [
                 'query' => gettype($query),
                 'chapter_id' => gettype($chapterId),
-                'narration_source' => gettype($narrationSource),
             ],
         ]);
 
@@ -135,9 +125,7 @@ class SearchService
         if ($chapterId !== null) {
             $builder->where('chapter_id', $chapterId);
         }
-        if ($narrationSource !== null) {
-            $builder->where('narration_source', 'like', '%' . $narrationSource . '%');
-        }
+        // Kolom narration_source dihapus dari skema; tidak ada filter.
 
         if ($driver === 'pgsql') {
             $tsQueryFn = ($mode === 'ts') ? 'to_tsquery' : 'plainto_tsquery';
@@ -145,10 +133,9 @@ class SearchService
             // Kelompokkan FTS dan sumber periwayatan dalam satu grup agar tunduk pada filter lain (mis. chapter_id)
             $builder->where(function ($q) use ($tsQueryFn, $query) {
                 $q->whereRaw(
-                    "to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(interpretation,'')) @@ {$tsQueryFn}('simple', ?)",
+                    "to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(footnotes,'')) @@ {$tsQueryFn}('simple', ?)",
                     [$query]
-                )
-                ->orWhere('narration_source', 'ilike', '%' . $query . '%');
+                );
             })
             // Tambahkan relevansi
             ->addSelect(DB::raw($this->tsRankExpression($query) . ' AS relevance'))
@@ -157,8 +144,7 @@ class SearchService
             $builder->where(function ($q) use ($query) {
                 $q->where('arabic_text', 'like', '%' . $query . '%')
                     ->orWhere('translation', 'like', '%' . $query . '%')
-                    ->orWhere('interpretation', 'like', '%' . $query . '%')
-                    ->orWhere('narration_source', 'like', '%' . $query . '%');
+                    ->orWhere('footnotes', 'like', '%' . $query . '%');
             })
             ->addSelect(DB::raw($this->likeRelevanceExpression($query) . ' AS relevance'))
             ->orderByDesc('relevance');
@@ -217,7 +203,7 @@ class SearchService
     protected function tsRankExpression(string $query): string
     {
         $escaped = str_replace("'", "''", $query);
-        return "ts_rank(to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(interpretation,'')), plainto_tsquery('simple', '{$escaped}'))";
+        return "ts_rank(to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(footnotes,'')), plainto_tsquery('simple', '{$escaped}'))";
     }
 
     /**
@@ -237,8 +223,7 @@ class SearchService
             (
                 (CASE WHEN translation LIKE '%{$q}%' THEN 2 ELSE 0 END) +
                 (CASE WHEN arabic_text LIKE '%{$q}%' THEN 2 ELSE 0 END) +
-                (CASE WHEN interpretation LIKE '%{$q}%' THEN 1 ELSE 0 END) +
-                (CASE WHEN narration_source LIKE '%{$q}%' THEN 1 ELSE 0 END)
+                (CASE WHEN footnotes LIKE '%{$q}%' THEN 1 ELSE 0 END)
             )
         ";
     }

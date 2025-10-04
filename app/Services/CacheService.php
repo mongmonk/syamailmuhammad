@@ -137,24 +137,23 @@ class CacheService
             $builder = Hadith::query()->with('chapter');
 
             if ($driver === 'pgsql') {
-                // PostgreSQL Full-Text Search pada arabic_text, translation, interpretation
-                // Gunakan konfigurasi 'simple' agar netral, tambahkan ILIKE untuk narration_source
+                // PostgreSQL Full-Text Search pada arabic_text, translation, footnotes
+                // Gunakan konfigurasi 'simple' agar netral
                 $escaped = str_replace("'", "''", $query);
-
+ 
                 $builder->whereRaw(
-                    "to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(interpretation,'')) @@ plainto_tsquery('simple', ?)",
+                    "to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(footnotes,'')) @@ plainto_tsquery('simple', ?)",
                     [$query]
-                )->orWhere('narration_source', 'ilike', '%' . $query . '%')
+                )
                   ->orderByDesc(\DB::raw(
-                      "ts_rank(to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(interpretation,'')), plainto_tsquery('simple', '{$escaped}'))"
+                      "ts_rank(to_tsvector('simple', coalesce(arabic_text,'') || ' ' || coalesce(translation,'') || ' ' || coalesce(footnotes,'')), plainto_tsquery('simple', '{$escaped}'))"
                   ));
             } else {
                 // Fallback LIKE-based untuk non-PostgreSQL
                 $builder->where(function ($q) use ($query) {
                     $q->where('arabic_text', 'like', '%' . $query . '%')
                       ->orWhere('translation', 'like', '%' . $query . '%')
-                      ->orWhere('interpretation', 'like', '%' . $query . '%')
-                      ->orWhere('narration_source', 'like', '%' . $query . '%');
+                      ->orWhere('footnotes', 'like', '%' . $query . '%');
                 });
             }
 

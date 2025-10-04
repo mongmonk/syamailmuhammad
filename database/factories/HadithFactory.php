@@ -20,8 +20,7 @@ class HadithFactory extends Factory
             'chapter_id' => \App\Models\Chapter::factory(),
             'arabic_text' => 'نص الحديث باللغة العربية هنا...',
             'translation' => fake()->paragraph(),
-            'interpretation' => fake()->paragraphs(3, true),
-            'narration_source' => 'HR. ' . fake()->randomElement(['Al-Bukhari', 'Muslim', 'Abu Dawud', 'Tirmidzi', 'Nasa\'i', 'Ibn Majah']),
+            'footnotes' => fake()->paragraphs(2, true),
             'hadith_number' => fake()->numberBetween(1, 100),
         ];
     }

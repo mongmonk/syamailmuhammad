@@ -13,15 +13,10 @@
                     <span class="px-2 py-1 rounded bg-emerald-50 text-emerald-700 border border-emerald-100">{{ $query }}</span>
                 </p>
                 <div class="mt-2 text-sm text-gray-600">
-                    @if(!empty($filters['chapter_id']) || !empty($filters['narration_source']))
+                    @if(!empty($filters['chapter_id']))
                         <span class="font-medium">Filter diterapkan:</span>
                         <ul class="mt-1 list-disc list-inside">
-                            @if(!empty($filters['chapter_id']))
-                                <li>Bab: #{{ $filters['chapter_id'] }}</li>
-                            @endif
-                            @if(!empty($filters['narration_source']))
-                                <li>Sumber: {{ $filters['narration_source'] }}</li>
-                            @endif
+                            <li>Bab: #{{ $filters['chapter_id'] }}</li>
                         </ul>
                     @else
                         <span class="text-gray-500">Tidak ada filter diterapkan.</span>

@@ -3,21 +3,25 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\JwtToken;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
 
 class JwtService
 {
     private string $algo = 'HS256';
 
     /**
-     * Issue a JWT token for the given user.
-     * Includes standard claims and minimal user claims (sub, role, status).
+     * Issue a JWT token for the given user and persist token metadata (jti) to DB.
+     * Type: 'access' or 'refresh'
      */
-    public function issueToken(User $user, ?int $ttlSeconds = null): string
+    public function issueToken(User $user, ?int $ttlSeconds = null, string $type = 'access', ?string $ip = null, ?string $userAgent = null): string
     {
         $now = time();
         $exp = $now + ($ttlSeconds ?? 3600 * 24); // default 24h
+        $jti = (string) Str::uuid();
 
         $payload = [
             'iss' => config('app.url', 'http://localhost'),
@@ -28,16 +32,52 @@ class JwtService
             'sub' => $user->id,
             'role' => $user->role,
             'status' => $user->status,
+            'jti' => $jti,
+            'typ' => $type,
         ];
 
         $key = $this->getKey();
 
-        return JWT::encode($payload, $key, $this->algo);
+        $token = JWT::encode($payload, $key, $this->algo);
+
+        // Persist token record for revocation/expiry checks
+        JwtToken::create([
+            'jti' => $jti,
+            'user_id' => $user->id,
+            'type' => $type === 'refresh' ? 'refresh' : 'access',
+            'expires_at' => Carbon::createFromTimestamp($exp),
+            'revoked_at' => null,
+            'ip' => $ip,
+            'user_agent' => $userAgent,
+        ]);
+
+        return $token;
+    }
+
+    /**
+     * Issue access and refresh tokens together.
+     * Returns array with access_token, refresh_token and their TTLs.
+     */
+    public function issueAccessAndRefreshTokens(User $user, ?int $accessTtlSeconds = null, ?int $refreshTtlSeconds = null, ?string $ip = null, ?string $userAgent = null): array
+    {
+        $accessTtl = $accessTtlSeconds ?? (3600 * 24);        // 24h default
+        $refreshTtl = $refreshTtlSeconds ?? (3600 * 24 * 14); // 14 days default
+
+        $access = $this->issueToken($user, $accessTtl, 'access', $ip, $userAgent);
+        $refresh = $this->issueToken($user, $refreshTtl, 'refresh', $ip, $userAgent);
+
+        return [
+            'access_token' => $access,
+            'access_expires_in' => $accessTtl,
+            'refresh_token' => $refresh,
+            'refresh_expires_in' => $refreshTtl,
+            'token_type' => 'Bearer',
+        ];
     }
 
     /**
      * Decode a JWT token, returns payload as array.
-     * Throws exception on invalid token.
+     * Throws exception on invalid/expired token.
      *
      * @return array<string, mixed>
      */
@@ -48,6 +88,32 @@ class JwtService
 
         // Normalize to associative array
         return json_decode(json_encode($decoded), true);
+    }
+
+    /**
+     * Revoke a token by JTI.
+     */
+    public function revokeByJti(string $jti): bool
+    {
+        $record = JwtToken::where('jti', $jti)->first();
+        if (! $record) {
+            return false;
+        }
+        if ($record->revoked_at) {
+            return true;
+        }
+        $record->revoked_at = Carbon::now();
+        $record->save();
+        return true;
+    }
+
+    /**
+     * Check if token JTI is revoked (or missing record).
+     */
+    public function isRevoked(string $jti): bool
+    {
+        $record = JwtToken::where('jti', $jti)->first();
+        return ! $record || $record->revoked_at !== null;
     }
 
     /**

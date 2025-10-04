@@ -11,11 +11,7 @@
     @endif
     
     <div class="border-t border-gray-200 pt-6">
-        <!-- Source -->
-        <div class="mb-4">
-            <span class="text-sm font-medium text-gray-900">Sumber:</span>
-            <span class="text-sm text-gray-600 ml-2">{{ $hadith->narration_source }}</span>
-        </div>
+        {{-- Kolom "Sumber" dihapus sesuai spesifikasi (hanya teks hadits, terjemahan, dan footnotes). --}}
         
         <!-- Arabic Text -->
         <div class="mb-8 text-right" dir="rtl">
@@ -29,28 +25,7 @@
             <p class="translation-text text-gray-700">{{ $hadith->translation }}</p>
         </div>
         
-        <!-- Interpretation -->
-        @if($hadith->interpretation)
-        <div class="mb-8">
-            <h3 class="text-lg font-medium text-gray-800 mb-4">Tafsir</h3>
-            <div class="interpretation-text">
-                <p>{!! $hadith->interpretation_rendered ?? e($hadith->interpretation) !!}</p>
-            </div>
-
-            @if(!empty($hadith->footnotes))
-                <hr class="my-4 border-gray-200" />
-                <div class="footnotes text-sm text-gray-600">
-                    <ol class="list-decimal pl-5 space-y-1">
-                        @foreach($hadith->footnotes as $fn)
-                            <li value="{{ $fn['index'] }}">
-                                {{ $fn['content'] }}
-                            </li>
-                        @endforeach
-                    </ol>
-                </div>
-            @endif
-        </div>
-        @endif
+        {{-- Bagian Tafsir dihapus dari tampilan. Footnotes akan ditampilkan di bagian bawah dengan garis atas dan teks kecil. --}}
         
         <!-- Audio Player (if exists) -->
         @if($hadith->audioFile)
@@ -61,9 +36,48 @@
             </div>
         </div>
         @endif
-        
-        <!-- User Actions -->
-        @if($showActions)
+
+        @php
+            $fnRaw = $hadith->footnotes ?? null;
+            $footnotesList = [];
+
+            if (is_array($fnRaw)) {
+                foreach ($fnRaw as $i => $item) {
+                    if (is_array($item)) {
+                        $index = $item['index'] ?? ($i + 1);
+                        $content = $item['content'] ?? (is_string($item[1] ?? ($item[0] ?? '')) ? ($item[1] ?? $item[0]) : '');
+                        $content = is_string($content) ? trim($content) : '';
+                        if ($content !== '') {
+                            $footnotesList[] = ['index' => $index, 'content' => $content];
+                        }
+                    } elseif (is_string($item)) {
+                        $content = trim($item);
+                        if ($content !== '') {
+                            $footnotesList[] = ['index' => ($i + 1), 'content' => $content];
+                        }
+                    }
+                }
+            } elseif (is_string($fnRaw)) {
+                $content = trim($fnRaw);
+                if ($content !== '') {
+                    $footnotesList[] = ['index' => 1, 'content' => $content];
+                }
+            }
+        @endphp
+
+        @if(count($footnotesList) > 0)
+            <hr class="my-6 border-gray-300" />
+            <div class="footnotes text-xs text-gray-700">
+                <ol class="list-decimal pl-5 space-y-1">
+                    @foreach($footnotesList as $fn)
+                        <li value="{{ $fn['index'] }}">{{ $fn['content'] }}</li>
+                    @endforeach
+                </ol>
+            </div>
+        @endif
+         
+         <!-- User Actions -->
+         @if($showActions)
         <div class="flex justify-end space-x-4 pt-4 border-t border-gray-200">
             @auth
             <button id="bookmark-btn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors duration-200" data-hadith-id="{{ $hadith->id }}">

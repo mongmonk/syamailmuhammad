@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use App\Rules\PhoneNumber;
 use App\Support\PhoneUtil;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -34,8 +35,8 @@ class AuthController extends Controller
             $request->all(),
             [
                 'name' => ['required', 'string', 'max:50'],
-                'email' => ['nullable', 'string', 'email', 'max:75', 'unique:users,email'],
-                'phone' => ['required', 'string', new PhoneNumber(), 'unique:users,phone'],
+                'email' => ['nullable', 'string', 'email', 'max:75'],
+                'phone' => ['required', 'string', new PhoneNumber()],
                 'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
             ],
             [
@@ -90,8 +91,14 @@ class AuthController extends Controller
                     ->withInput();
             }
 
-            // Cek unik berdasarkan nomor yang sudah dinormalisasi
-            if (User::where('phone', $normalizedPhone)->exists()) {
+            // Cek unik menggunakan blind index berdasarkan nomor yang sudah dinormalisasi
+            $appKey = (string) config('app.key', '');
+            if (str_starts_with($appKey, 'base64:')) {
+                $appKey = base64_decode(substr($appKey, 7));
+            }
+            $phoneHash = hash_hmac('sha256', $normalizedPhone, $appKey);
+
+            if (User::where('phone_hash', $phoneHash)->exists()) {
                 if ($request->wantsJson()) {
                     return response()->json([
                         'phone' => ['Nomor telepon sudah digunakan.']
@@ -102,11 +109,29 @@ class AuthController extends Controller
                     ->withInput();
             }
 
+            // Cek unik email menggunakan blind index jika email disediakan
+            $normalizedEmail = null;
+            if (!empty($validated['email'])) {
+                $normalizedEmail = Str::lower(trim((string) $validated['email']));
+                $emailHash = hash_hmac('sha256', $normalizedEmail, $appKey);
+                if (User::where('email_hash', $emailHash)->exists()) {
+                    if ($request->wantsJson()) {
+                        return response()->json([
+                            'email' => ['Email sudah digunakan.']
+                        ], 422);
+                    }
+                    return back()
+                        ->withErrors(['email' => 'Email sudah digunakan.'])
+                        ->withInput();
+                }
+            }
+
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'] ?? null,
                 'phone' => $normalizedPhone,
-                'password' => Hash::make($validated['password']),
+                // Hindari double-hash: cast [User.casts()](app/Models/User.php:53) sudah 'password' => 'hashed'
+                'password' => $validated['password'],
                 'status' => User::STATUS_PENDING,
                 'role' => User::ROLE_USER,
             ]);
@@ -169,19 +194,21 @@ class AuthController extends Controller
                 ->withInput();
         }
 
-        $credentials = [
-            'phone' => $normalizedPhone,
-            'password' => $request->input('password'),
-        ];
         $remember = (bool) $request->input('remember', false);
 
-        if (Auth::attempt($credentials, $remember)) {
-            $request->session()->regenerate();
-            $user = Auth::user();
+        // Cari user menggunakan blind index (phone_hash) lalu verifikasi password
+        $appKey = (string) config('app.key', '');
+        if (str_starts_with($appKey, 'base64:')) {
+            $appKey = base64_decode(substr($appKey, 7));
+        }
+        $phoneHash = hash_hmac('sha256', $normalizedPhone, $appKey);
 
+        /** @var \App\Models\User|null $user */
+        $user = User::where('phone_hash', $phoneHash)->first();
+
+        if ($user && Hash::check($request->input('password'), $user->password)) {
             // Jika status banned, tolak login dan jangan buat sesi.
             if ($user->isBanned()) {
-                Auth::logout();
                 if ($request->wantsJson()) {
                     return response()->json([
                         'code' => 'USER_STATUS_BANNED',
@@ -190,6 +217,9 @@ class AuthController extends Controller
                 }
                 return abort(403, trans('errors.USER_STATUS_BANNED'));
             }
+
+            Auth::login($user, $remember);
+            $request->session()->regenerate();
 
             // Pending diperbolehkan login untuk akses pribadi; batasan endpoint aktif di middleware.
             if ($request->wantsJson()) {
@@ -249,8 +279,15 @@ class AuthController extends Controller
             ], 422);
         }
 
+        // Cari user menggunakan blind index (phone_hash)
+        $appKey = (string) config('app.key', '');
+        if (str_starts_with($appKey, 'base64:')) {
+            $appKey = base64_decode(substr($appKey, 7));
+        }
+        $phoneHash = hash_hmac('sha256', $normalizedPhone, $appKey);
+
         /** @var \App\Models\User|null $user */
-        $user = User::where('phone', $normalizedPhone)->first();
+        $user = User::where('phone_hash', $phoneHash)->first();
 
         if (! $user || ! Hash::check($password, $user->password)) {
             // Security logging untuk percobaan login gagal (API)
@@ -273,17 +310,160 @@ class AuthController extends Controller
             ], 403);
         }
 
-        // Issue JWT token
+        // Issue access and refresh tokens
         /** @var \App\Services\JwtService $jwt */
         $jwt = app(\App\Services\JwtService::class);
-        $ttlSeconds = 3600 * 24; // 24 jam
-        $token = $jwt->issueToken($user, $ttlSeconds);
+        $tokens = $jwt->issueAccessAndRefreshTokens(
+            $user,
+            3600 * 24,         // access TTL 24 jam
+            3600 * 24 * 14,    // refresh TTL 14 hari
+            $request->ip(),
+            $request->userAgent()
+        );
 
         return response()->json([
-            'token' => $token,
-            'token_type' => 'Bearer',
-            'expires_in' => $ttlSeconds,
+            'access_token' => $tokens['access_token'],
+            'access_expires_in' => $tokens['access_expires_in'],
+            'refresh_token' => $tokens['refresh_token'],
+            'refresh_expires_in' => $tokens['refresh_expires_in'],
+            'token_type' => $tokens['token_type'],
             'user' => $user->only(['id', 'name', 'email', 'phone', 'status', 'role']),
+        ], 200);
+    }
+
+    /**
+     * Tukar refresh token menjadi access token baru.
+     * Header: Authorization: Bearer <refresh_jwt>
+     */
+    public function refreshToken(Request $request)
+    {
+        $authHeader = $request->header('Authorization', '');
+        if (! str_starts_with($authHeader, 'Bearer ')) {
+            return response()->json([
+                'code' => 'UNAUTHENTICATED',
+                'message' => trans('errors.TOKEN_MISSING'),
+            ], 401);
+        }
+
+        $refreshToken = substr($authHeader, 7);
+
+        try {
+            /** @var \App\Services\JwtService $jwt */
+            $jwt = app(\App\Services\JwtService::class);
+            $payload = $jwt->decode($refreshToken);
+
+            // Harus refresh token
+            $typ = $payload['typ'] ?? 'access';
+            if ($typ !== 'refresh') {
+                return response()->json([
+                    'code' => 'UNAUTHENTICATED',
+                    'message' => trans('errors.TOKEN_INVALID'),
+                ], 401);
+            }
+
+            // Cek JTI revoked
+            $jti = $payload['jti'] ?? null;
+            if (empty($jti) || $jwt->isRevoked($jti)) {
+                return response()->json([
+                    'code' => 'UNAUTHENTICATED',
+                    'message' => trans('errors.TOKEN_REVOKED'),
+                ], 401);
+            }
+
+            // Validasi user
+            $userId = (int) ($payload['sub'] ?? 0);
+            if ($userId <= 0) {
+                return response()->json([
+                    'code' => 'UNAUTHENTICATED',
+                    'message' => trans('errors.TOKEN_SUB_MISSING'),
+                ], 401);
+            }
+
+            /** @var \App\Models\User|null $user */
+            $user = User::find($userId);
+            if (! $user) {
+                return response()->json([
+                    'code' => 'UNAUTHENTICATED',
+                    'message' => trans('errors.USER_NOT_FOUND'),
+                ], 401);
+            }
+
+            if ($user->isBanned()) {
+                return response()->json([
+                    'code' => 'USER_STATUS_BANNED',
+                    'message' => trans('errors.USER_STATUS_BANNED'),
+                ], 403);
+            }
+
+            // Keluarkan access token baru (refresh tetap valid hingga kadaluarsa atau di-revoke)
+            $ttlSeconds = 3600 * 24; // 24 jam
+            $accessToken = $jwt->issueToken($user, $ttlSeconds, 'access', $request->ip(), $request->userAgent());
+
+            return response()->json([
+                'token' => $accessToken,
+                'token_type' => 'Bearer',
+                'expires_in' => $ttlSeconds,
+            ], 200);
+        } catch (\Firebase\JWT\ExpiredException $e) {
+            return response()->json([
+                'code' => 'UNAUTHENTICATED',
+                'message' => trans('errors.TOKEN_EXPIRED'),
+            ], 401);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'code' => 'UNAUTHENTICATED',
+                'message' => trans('errors.TOKEN_INVALID'),
+                'detail' => app()->hasDebugModeEnabled() ? $e->getMessage() : null,
+            ], 401);
+        }
+    }
+
+    /**
+     * Revoke token berdasarkan JTI.
+     * - Body JSON opsional: { "jti": "<uuid>" }
+     * - Jika tidak ada jti di body, gunakan Authorization Bearer token untuk mengambil JTI.
+     */
+    public function revokeToken(Request $request)
+    {
+        /** @var \App\Services\JwtService $jwt */
+        $jwt = app(\App\Services\JwtService::class);
+
+        $jti = (string) ($request->input('jti') ?? '');
+
+        if ($jti === '') {
+            $authHeader = $request->header('Authorization', '');
+            if (str_starts_with($authHeader, 'Bearer ')) {
+                $raw = substr($authHeader, 7);
+                try {
+                    $payload = $jwt->decode($raw);
+                    $jti = (string) ($payload['jti'] ?? '');
+                } catch (\Firebase\JWT\ExpiredException $e) {
+                    return response()->json([
+                        'code' => 'UNAUTHENTICATED',
+                        'message' => trans('errors.TOKEN_EXPIRED'),
+                    ], 401);
+                } catch (\Throwable $e) {
+                    return response()->json([
+                        'code' => 'UNAUTHENTICATED',
+                        'message' => trans('errors.TOKEN_INVALID'),
+                        'detail' => app()->hasDebugModeEnabled() ? $e->getMessage() : null,
+                    ], 401);
+                }
+            }
+        }
+
+        if ($jti === '') {
+            return response()->json([
+                'code' => 'BAD_REQUEST',
+                'message' => 'Parameter jti diperlukan atau sertakan Authorization: Bearer token.',
+            ], 400);
+        }
+
+        // Idempotent: 200 meskipun sudah di-revoke atau tidak ditemukan
+        $jwt->revokeByJti($jti);
+
+        return response()->json([
+            'message' => 'revoked',
         ], 200);
     }
 }

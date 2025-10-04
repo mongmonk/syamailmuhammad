@@ -8,8 +8,12 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\PostPublicController;
 
-// API Auth (JWT Bearer)
+ // API Auth (JWT Bearer)
 Route::post('/auth/login', [AuthController::class, 'loginApi'])
+    ->middleware(['security.headers', 'throttle:auth']);
+Route::post('/auth/refresh', [AuthController::class, 'refreshToken'])
+    ->middleware(['security.headers', 'throttle:auth']);
+Route::post('/auth/revoke', [AuthController::class, 'revokeToken'])
     ->middleware(['security.headers', 'throttle:auth']);
 
 // Protected API routes (JWT + not banned)

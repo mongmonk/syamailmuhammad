@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\UserNoteController;
 use App\Http\Controllers\ProgressController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 
 
 Route::get('/', function () {
@@ -53,6 +55,29 @@ Route::post('/reset-password', [NewPasswordController::class, 'store'])->name('p
 
 // Email verification routes
 
+// Dashboard routes
+Route::get('/dashboard', function () {
+    return view('dashboard.user.index');
+})->name('dashboard')->middleware(['security.headers', 'auth', 'not.banned', 'cache.headers:none']);
+
+// Admin dashboard routes (SSR Blade)
+Route::middleware(['security.headers', 'auth', 'ensure.active', 'role.admin'])->prefix('admin')->group(function () {
+    Route::get('/', function () {
+        return view('dashboard.admin.index');
+    })->name('admin.index');
+
+    // Admin - Users (SSR)
+    Route::get('/users', [\App\Http\Controllers\Admin\UsersPageController::class, 'index'])->name('admin.users.index');
+    Route::get('/users/{user}/edit', [\App\Http\Controllers\Admin\UsersPageController::class, 'edit'])->name('admin.users.edit');
+    Route::patch('/users/{user}', [\App\Http\Controllers\Admin\UsersPageController::class, 'update'])->name('admin.users.update');
+// Admin - Posts (SSR)
+Route::get('/posts', [\App\Http\Controllers\Admin\PostsPageController::class, 'index'])->name('admin.posts.index');
+Route::get('/posts/create', [\App\Http\Controllers\Admin\PostsPageController::class, 'create'])->name('admin.posts.create');
+Route::post('/posts', [\App\Http\Controllers\Admin\PostsPageController::class, 'store'])->name('admin.posts.store');
+Route::get('/posts/{post}/edit', [\App\Http\Controllers\Admin\PostsPageController::class, 'edit'])->name('admin.posts.edit');
+Route::patch('/posts/{post}', [\App\Http\Controllers\Admin\PostsPageController::class, 'update'])->name('admin.posts.update');
+Route::delete('/posts/{post}', [\App\Http\Controllers\Admin\PostsPageController::class, 'destroy'])->name('admin.posts.destroy');
+});
 // Profile routes
 Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show')->middleware(['security.headers', 'auth', 'not.banned']);
 Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit')->middleware(['security.headers', 'auth', 'not.banned']);
@@ -86,3 +111,7 @@ Route::middleware(['security.headers', 'auth', 'not.banned'])->group(function ()
 Route::get('/search', [SearchController::class, 'search'])->name('search')->middleware(['security.headers', 'cache.headers:short', 'throttle:search']);
 Route::get('/search/history', [SearchController::class, 'history'])->name('search.history')->middleware(['security.headers', 'cache.headers:short', 'throttle:search']);
 Route::delete('/search/history', [SearchController::class, 'clearHistory'])->name('search.history.clear')->middleware(['security.headers', 'auth']);
+
+// Public SSR - Posts
+Route::get('/posts', [\App\Http\Controllers\PostsPublicPageController::class, 'index'])->name('posts.index')->middleware(['security.headers', 'cache.headers:short']);
+Route::get('/posts/{slug}', [\App\Http\Controllers\PostsPublicPageController::class, 'show'])->name('posts.show')->middleware(['security.headers', 'cache.headers:short']);

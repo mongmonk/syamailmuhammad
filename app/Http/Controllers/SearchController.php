@@ -32,23 +32,20 @@ class SearchController extends Controller
             'query' => 'required|string|min:2|max:100',
             'limit' => 'sometimes|integer|min:1|max:50',
             'chapter_id' => 'sometimes|nullable|integer|min:1',
-            'narration_source' => 'sometimes|nullable|string|max:100',
         ]);
 
         $query = $request->input('query');
         $limit = (int) $request->input('limit', 20);
         $chapterId = $request->input('chapter_id');
-        $narrationSource = $request->input('narration_source');
 
         // Cache wrapper while delegating the actual search to SearchService
-        $cacheKey = 'search:json:' . md5(json_encode([$query, $limit, $chapterId, $narrationSource]));
+        $cacheKey = 'search:json:' . md5(json_encode([$query, $limit, $chapterId]));
 
-        $results = Cache::remember($cacheKey, 3600, function () use ($query, $limit, $chapterId, $narrationSource) {
+        $results = Cache::remember($cacheKey, 3600, function () use ($query, $limit, $chapterId) {
             return $this->searchService->basicSearch(
                 $query,
                 $limit,
-                $chapterId ? (int)$chapterId : null,
-                $narrationSource ? (string)$narrationSource : null
+                $chapterId ? (int)$chapterId : null
             );
         });
 
@@ -176,7 +173,6 @@ class SearchController extends Controller
             'query' => 'required|string|min:2|max:100',
             'limit' => 'sometimes|integer|min:1|max:50',
             'chapter_id' => 'sometimes|nullable|integer|min:1',
-            'narration_source' => 'sometimes|nullable|string|max:100',
             'mode' => 'sometimes|nullable|string|in:plain,ts',
         ]);
 
@@ -186,7 +182,6 @@ class SearchController extends Controller
         $filters = [
             'limit' => $limit,
             'chapter_id' => $validated['chapter_id'] ?? null,
-            'narration_source' => $validated['narration_source'] ?? null,
             'mode' => $validated['mode'] ?? null,
         ];
 

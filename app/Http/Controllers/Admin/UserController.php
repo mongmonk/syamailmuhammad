@@ -10,6 +10,7 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Hash;
 use App\Rules\PhoneNumber;
 use App\Support\PhoneUtil;
+use Illuminate\Support\Str;
 
 /**
  * Manajemen pengguna oleh admin:
@@ -58,31 +59,51 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:50'],
-            'email' => ['nullable', 'string', 'email', 'max:75', 'unique:users,email'],
-            'phone' => ['required', 'string', new PhoneNumber(), 'unique:users,phone'],
+            'email' => ['nullable', 'string', 'email', 'max:75'],
+            'phone' => ['required', 'string', new PhoneNumber()],
             'password' => ['required', Password::min(8)->letters()->numbers()],
             'status' => ['nullable', 'string', Rule::in([User::STATUS_PENDING, User::STATUS_ACTIVE, User::STATUS_BANNED])],
             'role' => ['nullable', 'string', Rule::in([User::ROLE_USER, User::ROLE_ADMIN])],
         ]);
 
-        // Normalisasi nomor telepon dan cek unik setelah normalisasi
+        // Normalisasi nomor telepon dan cek unik menggunakan blind index setelah normalisasi
         $normalizedPhone = PhoneUtil::normalize($data['phone']);
         if ($normalizedPhone === null) {
             return response()->json([
                 'phone' => ['Format nomor telepon tidak valid (gunakan 0..., 62..., atau +62...).']
             ], 422);
         }
-        if (User::where('phone', $normalizedPhone)->exists()) {
+
+        $appKey = (string) config('app.key', '');
+        if (str_starts_with($appKey, 'base64:')) {
+            $appKey = base64_decode(substr($appKey, 7));
+        }
+        $phoneHash = hash_hmac('sha256', $normalizedPhone, $appKey);
+
+        if (User::where('phone_hash', $phoneHash)->exists()) {
             return response()->json([
                 'phone' => ['Nomor telepon sudah digunakan.']
             ], 422);
+        }
+
+        // Cek unik email menggunakan blind index jika email disediakan
+        if (!empty($data['email'])) {
+            $normalizedEmail = Str::lower(trim((string) $data['email']));
+            $emailHash = hash_hmac('sha256', $normalizedEmail, $appKey);
+
+            if (User::where('email_hash', $emailHash)->exists()) {
+                return response()->json([
+                    'email' => ['Email sudah digunakan.']
+                ], 422);
+            }
         }
 
         $user = new User();
         $user->name = $data['name'];
         $user->email = $data['email'] ?? null;
         $user->phone = $normalizedPhone;
-        $user->password = Hash::make($data['password']);
+        // Hindari double-hash: cast [User.casts()](app/Models/User.php:53) sudah 'password' => 'hashed'
+        $user->password = $data['password'];
         $user->status = $data['status'] ?? User::STATUS_PENDING;
         $user->role = $data['role'] ?? User::ROLE_USER;
         $user->save();

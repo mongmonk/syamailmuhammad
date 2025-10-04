@@ -17,8 +17,7 @@ class Hadith extends Model
         'chapter_id',
         'arabic_text',
         'translation',
-        'interpretation',
-        'narration_source',
+        'footnotes',
         'hadith_number',
     ];
 

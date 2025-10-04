@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Blade;
 
 /**
  * Application service provider
@@ -40,6 +41,27 @@ class AppServiceProvider extends ServiceProvider
         if ((bool) env('FORCE_HTTPS', false)) {
             URL::forceScheme('https');
         }
+
+        // Blade directives untuk UI gating berdasarkan otorisasi
+        Blade::if('role', function (string $role): bool {
+            $user = Auth::user();
+            return $user ? $user->role === $role : false;
+        });
+
+        Blade::if('status', function (string $status): bool {
+            $user = Auth::user();
+            return $user ? $user->status === $status : false;
+        });
+
+        Blade::if('notbanned', function (): bool {
+            $user = Auth::user();
+            return $user ? ! $user->isBanned() : false;
+        });
+
+        Blade::if('active', function (): bool {
+            $user = Auth::user();
+            return $user ? $user->isActive() : false;
+        });
 
         // Instrumentasi slow query
         if ((bool) env('ENABLE_SLOW_QUERY_LOGGING', true)) {

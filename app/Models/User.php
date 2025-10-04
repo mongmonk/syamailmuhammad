@@ -55,6 +55,8 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'email' => EncryptedString::class,
+            'phone' => EncryptedString::class,
         ];
     }
 
@@ -108,15 +110,4 @@ class User extends Authenticatable
         return $this->hasMany(SearchHistory::class);
     }
 
-    /**
-     * Mutator: normalisasi nomor telepon ke format kanonik "62XXXXXXXXXX" saat diset.
-     */
-    public function setPhoneAttribute($value): void
-    {
-        if ($value === null || $value === '') {
-            $this->attributes['phone'] = $value;
-            return;
-        }
-        $this->attributes['phone'] = PhoneUtil::normalize((string) $value);
-    }
 }

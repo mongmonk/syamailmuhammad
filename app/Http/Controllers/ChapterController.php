@@ -47,11 +47,19 @@ class ChapterController extends Controller
         $chapterModel = $chapterWithHadiths['chapter'];
         $hadiths = $chapterWithHadiths['hadiths'];
 
-        // Proses footnotes untuk setiap hadits pada bab
+        // Proses footnotes untuk setiap hadits pada bab (gunakan kolom footnotes)
+        // Tambahkan fallback: jika tidak ada marker, jadikan seluruh teks footnotes sebagai satu item.
         $hadiths = $hadiths->map(function ($h) use ($parser) {
-            $parsed = $parser->process($h->interpretation);
-            $h->interpretation_rendered = $parsed['content'];
+            $raw = $h->footnotes ?? '';
+            $parsed = $parser->process($raw);
             $h->footnotes = $parsed['footnotes'];
+
+            if (empty($h->footnotes) && !empty(trim((string) $raw))) {
+                $h->footnotes = [
+                    ['index' => 1, 'content' => trim(preg_replace('/\s+/', ' ', (string) $raw))],
+                ];
+            }
+
             return $h;
         });
 
@@ -70,7 +78,6 @@ class ChapterController extends Controller
                         'hadith_number' => $h->hadith_number,
                         'arabic_text' => $h->arabic_text,
                         'translation' => $h->translation,
-                        'interpretation' => $h->interpretation,
                         'footnotes' => $h->footnotes ?? [],
                     ];
                 })->values(),

@@ -38,7 +38,6 @@
                         <h3 class="text-lg font-semibold text-gray-900">
                             Hadits {{ $hadith->hadith_number }}
                         </h3>
-                        <span class="text-sm text-gray-500">{{ $hadith->narration_source }}</span>
                     </div>
                     
                     <div class="mb-4">
@@ -50,23 +49,15 @@
                         <!-- Translation -->
                         <p class="translation-text text-gray-700 mb-4">{{ $hadith->translation }}</p>
                         
-                        <!-- Interpretation (if exists) -->
-                        @if($hadith->interpretation)
-                        <div class="interpretation-text">
-                            <h4 class="font-medium text-gray-900 mb-2">Tafsir:</h4>
-                            <p>{!! $hadith->interpretation_rendered ?? e($hadith->interpretation) !!}</p>
-                        </div>
-
                         @if(!empty($hadith->footnotes))
-                            <hr class="my-4 border-gray-200" />
-                            <div class="footnotes text-sm text-gray-600">
+                            <hr class="my-6 border-gray-300" />
+                            <div class="footnotes text-xs text-gray-700">
                                 <ol class="list-decimal pl-5 space-y-1">
                                     @foreach($hadith->footnotes as $fn)
                                         <li value="{{ $fn['index'] }}">{{ $fn['content'] }}</li>
                                     @endforeach
                                 </ol>
                             </div>
-                        @endif
                         @endif
                     </div>
                     

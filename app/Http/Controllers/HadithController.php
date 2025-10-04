@@ -6,6 +6,7 @@ use App\Models\Hadith;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
 use App\Support\FootnoteParser;
+use Illuminate\Support\Facades\Log;
 
 class HadithController extends Controller
 {
@@ -30,13 +31,27 @@ class HadithController extends Controller
             abort(404);
         }
     
-        // Parse footnotes dari tafsir hadits
+        // Parse footnotes dari kolom footnotes (hasil rename dari interpretation)
         /** @var \App\Support\FootnoteParser $parser */
         $parser = app(FootnoteParser::class);
         $currentHadith = $hadithWithRelatedData['hadith'];
-        $parsed = $parser->process($currentHadith->interpretation);
-        $currentHadith->interpretation_rendered = $parsed['content'];
+        $rawFootnotes = $currentHadith->footnotes ?? '';
+        $parsed = $parser->process($rawFootnotes);
+
+        // Gunakan daftar footnotes; bila parser tidak menemukan penanda, fallback ke satu item dari teks
         $currentHadith->footnotes = $parsed['footnotes'];
+        if (empty($currentHadith->footnotes) && !empty(trim((string) $rawFootnotes))) {
+            $currentHadith->footnotes = [
+                ['index' => 1, 'content' => trim(preg_replace('/\s+/', ' ', (string) $rawFootnotes))],
+            ];
+        }
+
+        // Logging untuk validasi jumlah footnote yang dihasilkan
+        Log::info('syamail.footnotes_generated', [
+            'hadith_id' => $currentHadith->id,
+            'count' => count($parsed['footnotes']),
+            'has_markers' => count($parsed['footnotes']) > 0,
+        ]);
         
         // Get user's bookmark and notes if authenticated
         $bookmark = null;
@@ -64,7 +79,6 @@ class HadithController extends Controller
                     'hadith_number' => $currentHadith->hadith_number,
                     'arabic_text' => $currentHadith->arabic_text,
                     'translation' => $currentHadith->translation,
-                    'interpretation' => $currentHadith->interpretation,
                     'footnotes' => $currentHadith->footnotes ?? [],
                 ],
                 'previousHadith' => $prev ? [

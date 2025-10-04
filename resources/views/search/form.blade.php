@@ -89,7 +89,7 @@
 
                     <div class="flex items-center justify-between">
                         <div class="text-sm text-gray-500">
-                            Pencarian mendukung teks Arab dan Latin. Penilaian relevansi dioptimalkan untuk PostgreSQL.
+                            Pencarian mendukung teks Arab dan Latin.
                         </div>
                         <div class="flex items-center space-x-3">
                             <a href="{{ route('search.form') }}" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">Reset</a>
@@ -148,9 +148,9 @@
             </div>
         </div>
 
-        <div class="mt-6 text-sm text-gray-500">
+        <!-- <div class="mt-6 text-sm text-gray-500">
             Endpoint JSON tersedia di <code class="px-1 py-0.5 bg-gray-100 border rounded">GET /search?query=...</code> untuk integrasi API.
-        </div>
+        </div> -->
     </div>
 </div>
 @endsection

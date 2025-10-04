@@ -35,11 +35,30 @@ class JwtAuthenticate
             $jwt = app(JwtService::class);
             $payload = $jwt->decode($token);
 
+            // Validate subject
             $userId = (int) ($payload['sub'] ?? 0);
             if ($userId <= 0) {
                 return response()->json([
                     'code' => 'UNAUTHENTICATED',
                     'message' => trans('errors.TOKEN_SUB_MISSING'),
+                ], 401);
+            }
+
+            // Validate token type (must be access for protected API routes)
+            $typ = $payload['typ'] ?? 'access';
+            if ($typ !== 'access') {
+                return response()->json([
+                    'code' => 'UNAUTHENTICATED',
+                    'message' => trans('errors.TOKEN_INVALID'),
+                ], 401);
+            }
+
+            // Validate JTI (revocation)
+            $jti = $payload['jti'] ?? null;
+            if (empty($jti) || $jwt->isRevoked($jti)) {
+                return response()->json([
+                    'code' => 'UNAUTHENTICATED',
+                    'message' => trans('errors.TOKEN_REVOKED'),
                 ], 401);
             }
 
@@ -60,8 +79,14 @@ class JwtAuthenticate
                 ], 403);
             }
 
-            // Attach user to current request's auth context
+            // Attach user and payload to current request context
             Auth::setUser($user);
+            $request->attributes->set('jwt_payload', $payload);
+        } catch (\Firebase\JWT\ExpiredException $e) {
+            return response()->json([
+                'code' => 'UNAUTHENTICATED',
+                'message' => trans('errors.TOKEN_EXPIRED'),
+            ], 401);
         } catch (\Throwable $e) {
             return response()->json([
                 'code' => 'UNAUTHENTICATED',

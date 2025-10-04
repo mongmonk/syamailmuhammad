@@ -28,7 +28,6 @@
                                     <h3 class="text-lg font-semibold text-gray-900">
                                         {{ $bookmark->hadith->chapter->title }}
                                     </h3>
-                                    <p class="text-sm text-gray-600">Sumber: {{ $bookmark->hadith->narration_source }}</p>
                                 </div>
                                 <div class="flex items-center space-x-3">
                                     <a href="{{ route('hadiths.show', $bookmark->hadith->id) }}" class="px-3 py-2 text-sm bg-emerald-600 text-white rounded-md hover:bg-emerald-700">

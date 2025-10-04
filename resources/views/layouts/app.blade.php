@@ -45,8 +45,13 @@
                         <a href="{{ url('/') }}" class="text-sm font-medium transition-colors {{ request()->is('/') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Beranda</a>
                         <a href="{{ route('chapters.index') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('chapters.*') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Bab</a>
                         <a href="{{ route('search.form') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('search.form') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Cari</a>
+                        <a href="{{ route('posts.index') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('posts.*') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Artikel</a>
                         @if (Route::has('login'))
                             @auth
+                                <a href="{{ route('dashboard') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('dashboard') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Dashboard</a>
+                                @role('admin')
+                                <a href="{{ url('/admin') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('admin.*') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Admin</a>
+                                @endrole
                                 <a href="{{ route('profile.show') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('profile.*') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Profil</a>
                                 <form method="POST" action="{{ route('logout') }}" class="inline">
                                     @csrf
@@ -78,8 +83,13 @@
                     <a href="{{ url('/') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->is('/') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Beranda</a>
                     <a href="{{ route('chapters.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('chapters.*') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Bab</a>
                     <a href="{{ route('search.form') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('search.form') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Cari</a>
+                    <a href="{{ route('posts.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('posts.*') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Artikel</a>
                     @if (Route::has('login'))
                         @auth
+                            <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('dashboard') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Dashboard</a>
+                            @role('admin')
+                            <a href="{{ url('/admin') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('admin.*') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Admin</a>
+                            @endrole
                             <a href="{{ route('profile.show') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('profile.*') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Profil</a>
                             <form method="POST" action="{{ route('logout') }}" class="px-3 py-2">
                                 @csrf
@@ -111,7 +121,7 @@
                 <div class="flex flex-col sm:flex-row items-center justify-between text-sm text-gray-500">
                     <div>&copy; {{ date('Y') }} {{ config('app.name', 'Syamail Muhammadiyah') }}. All rights reserved.</div>
                     <div class="mt-2 sm:mt-0">
-                        <span class="text-gray-400">v</span> {{ app()->version() }}
+                        <span class="text-gray-400">v</span> {{ config('app.version') }}
                     </div>
                 </div>
             </div>
