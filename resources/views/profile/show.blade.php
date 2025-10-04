@@ -44,24 +44,11 @@
                         <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ $user->phone ?? '-' }}</dd>
                     </div>
                     <div class="py-3 sm:grid sm:grid-cols-3 sm:gap-4">
-                        <dt class="text-sm font-medium text-gray-500">Status Email</dt>
+                        <dt class="text-sm font-medium text-gray-500">Status Akun</dt>
                         <dd class="mt-1 text-sm sm:mt-0 sm:col-span-2">
-                            @if ($user->hasVerifiedEmail())
-                                <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-emerald-100 text-emerald-800">
-                                    Terverifikasi
-                                </span>
-                            @else
-                                <div class="space-y-2">
-                                    <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-800">
-                                        Belum Terverifikasi
-                                    </span>
-                                    <div>
-                                        <a href="{{ route('verification.notice') }}" class="text-emerald-600 hover:text-emerald-800 text-sm">
-                                            Verifikasi sekarang
-                                        </a>
-                                    </div>
-                                </div>
-                            @endif
+                            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded bg-gray-100 text-gray-800">
+                                {{ $user->status }}
+                            </span>
                         </dd>
                     </div>
                 </dl>
@@ -82,22 +69,6 @@
                 </div>
             </div>
 
-            <!-- Aksi Verifikasi Email (jika belum) -->
-            @unless ($user->hasVerifiedEmail())
-                <div class="bg-white rounded-lg shadow p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Kirim Ulang Email Verifikasi</h3>
-                    <p class="text-sm text-gray-600 mb-4">
-                        Tidak menemukan email verifikasi? Kirim ulang tautan verifikasi ke alamat email Anda.
-                    </p>
-                    <form method="POST" action="{{ route('verification.send') }}">
-                        @csrf
-                        <button type="submit"
-                                class="px-4 py-2 bg-emerald-600 text-white rounded-md font-medium hover:bg-emerald-700">
-                            Kirim Ulang
-                        </button>
-                    </form>
-                </div>
-            @endunless
 
             <!-- Hapus Akun -->
             <div class="mt-8 bg-white rounded-lg shadow p-6">

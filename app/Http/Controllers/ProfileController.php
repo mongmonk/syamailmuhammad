@@ -7,13 +7,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use App\Rules\PhoneNumber;
+use App\Models\User;
+use App\Support\PhoneUtil;
 
 class ProfileController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(['auth', 'verified']);
-    }
 
     /**
      * Tampilkan profil pengguna saat ini.
@@ -44,8 +43,8 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
-            'phone' => ['nullable', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
+            'phone' => ['nullable', 'string', new PhoneNumber(), Rule::unique('users', 'phone')->ignore($user->id)],
             'current_password' => ['required_with:password', 'string'],
             'password' => ['nullable', 'confirmed', Password::min(8)->letters()->numbers()],
         ]);
@@ -62,8 +61,31 @@ class ProfileController extends Controller
 
         // Update field dasar
         $user->name = $validated['name'];
-        $user->email = $validated['email'];
-        $user->phone = $validated['phone'] ?? null;
+        $user->email = $validated['email'] ?? null;
+
+        // Update nomor telepon hanya jika ada input; normalisasikan dan cek unik pada format simpan "62XXXXXXXXXX"
+        if (array_key_exists('phone', $validated) && $validated['phone'] !== null && $validated['phone'] !== '') {
+            $normalizedPhone = PhoneUtil::normalize($validated['phone']);
+            if ($normalizedPhone === null) {
+                return back()
+                    ->withErrors(['phone' => 'Format nomor telepon tidak valid (gunakan 0..., 62..., atau +62...).'])
+                    ->withInput();
+            }
+
+            // Pastikan unik terhadap nomor yang sudah dinormalisasi (abaikan user saat ini)
+            $exists = User::where('phone', $normalizedPhone)
+                ->where('id', '!=', $user->id)
+                ->exists();
+
+            if ($exists) {
+                return back()
+                    ->withErrors(['phone' => 'Nomor telepon sudah digunakan.'])
+                    ->withInput();
+            }
+
+            $user->phone = $normalizedPhone;
+        }
+
         $user->save();
 
         return redirect()->route('profile.show')->with('status', 'Profil berhasil diperbarui.');

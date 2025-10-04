@@ -34,8 +34,21 @@
         <div class="mb-8">
             <h3 class="text-lg font-medium text-gray-800 mb-4">Tafsir</h3>
             <div class="interpretation-text">
-                <p>{{ $hadith->interpretation }}</p>
+                <p>{!! $hadith->interpretation_rendered ?? e($hadith->interpretation) !!}</p>
             </div>
+
+            @if(!empty($hadith->footnotes))
+                <hr class="my-4 border-gray-200" />
+                <div class="footnotes text-sm text-gray-600">
+                    <ol class="list-decimal pl-5 space-y-1">
+                        @foreach($hadith->footnotes as $fn)
+                            <li value="{{ $fn['index'] }}">
+                                {{ $fn['content'] }}
+                            </li>
+                        @endforeach
+                    </ol>
+                </div>
+            @endif
         </div>
         @endif
         

@@ -48,9 +48,6 @@
                         @if (Route::has('login'))
                             @auth
                                 <a href="{{ route('profile.show') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('profile.*') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Profil</a>
-                                @if (! auth()->user()->hasVerifiedEmail())
-                                    <a href="{{ route('verification.notice') }}" class="text-sm font-medium transition-colors text-yellow-700 hover:text-yellow-800">Verifikasi</a>
-                                @endif
                                 <form method="POST" action="{{ route('logout') }}" class="inline">
                                     @csrf
                                     <button type="submit" class="text-sm font-medium transition-colors text-gray-700 hover:text-emerald-700">Keluar</button>
@@ -84,9 +81,6 @@
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ route('profile.show') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('profile.*') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Profil</a>
-                            @if (! auth()->user()->hasVerifiedEmail())
-                            <a href="{{ route('verification.notice') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800">Verifikasi</a>
-                            @endif
                             <form method="POST" action="{{ route('logout') }}" class="px-3 py-2">
                                 @csrf
                                 <button type="submit" class="w-full text-left text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-emerald-700 rounded-md">

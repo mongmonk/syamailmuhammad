@@ -16,6 +16,10 @@ class SearchFeatureTest extends TestCase
     /** @test */
     public function search_form_page_renders()
     {
+        // /search/form kini membutuhkan user login dengan status aktif
+        $user = \App\Models\User::factory()->active()->create();
+        $this->actingAs($user);
+
         $response = $this->get('/search/form');
 
         $response->assertStatus(200);
@@ -61,7 +65,8 @@ class SearchFeatureTest extends TestCase
     /** @test */
     public function popular_queries_display_on_form_page()
     {
-        $user = User::factory()->create();
+        // Form membutuhkan status aktif agar tidak 403 oleh middleware ensure.active
+        $user = User::factory()->active()->create();
 
         // Buat data popular query secara agregasi
         SearchHistory::create([
@@ -125,7 +130,8 @@ class SearchFeatureTest extends TestCase
     /** @test */
     public function authenticated_user_history_is_listed_on_form()
     {
-        $user = User::factory()->create();
+        // Pastikan user aktif agar akses ke /search/form tidak diblokir
+        $user = User::factory()->active()->create();
 
         // Buat riwayat untuk user
         SearchHistory::create([
