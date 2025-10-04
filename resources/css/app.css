@@ -1,0 +1,54 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-arabic: 'Amiri Quran', 'KFGQPC Uthman Taha Naskh', 'Noto Naskh Arabic', 'Traditional Arabic', serif;
+}
+
+/* Arabic Text Styling */
+.arabic-text {
+    font-family: var(--font-arabic);
+    line-height: 2;
+    text-align: right;
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.arabic-heading {
+    font-family: var(--font-arabic);
+    text-align: right;
+    direction: rtl;
+    unicode-bidi: bidi-override;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.latin-text {
+    font-family: var(--font-sans);
+    text-align: left;
+    direction: ltr;
+}
+
+.translation-text {
+    font-family: var(--font-sans);
+    line-height: 1.8;
+    font-size: 1.125rem;
+}
+
+.interpretation-text {
+    font-family: var(--font-sans);
+    line-height: 1.8;
+    font-size: 1.125rem;
+    background-color: rgba(243, 244, 246, 0.5);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid #10b981;
+}
