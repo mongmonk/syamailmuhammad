@@ -12,3 +12,9 @@
 /.phpunit.result.cache 
 Homestead.yaml 
 Homestead.json 
+
+
+# Syamail: ignore dev and docs directories
+/.kilocode
+/.vscode
+/docs
