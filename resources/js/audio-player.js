@@ -29,6 +29,7 @@ class AudioPlayer {
         
         // Create play button
         const playButton = document.createElement('button');
+        playButton.type = 'button'; // Hindari submit form saat tombol di dalam form
         playButton.className = 'play-button bg-emerald-600 hover:bg-emerald-700 text-white rounded-full w-12 h-12 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50';
         playButton.innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>';
         
@@ -74,6 +75,19 @@ class AudioPlayer {
         // Clear container and add player
         container.innerHTML = '';
         container.appendChild(playerContainer);
+
+        // Prevent unintended form submission when interacting with audio controls
+        const formEl = container.closest('form');
+        if (formEl) {
+            formEl.addEventListener('submit', (e) => {
+                // If submit was triggered by our audio controls, cancel it
+                const submitter = e.submitter;
+                if (submitter && submitter.classList && submitter.classList.contains('play-button')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            });
+        }
         
         // Store player data
         const player = {
@@ -97,8 +111,20 @@ class AudioPlayer {
 
     setupEventListeners(player) {
         // Play button click
-        player.playButton.addEventListener('click', () => {
+        player.playButton.addEventListener('click', (e) => {
+            // Hindari submit form atau bubbling ke container form
+            e.preventDefault();
+            e.stopPropagation();
             this.togglePlay(player);
+        });
+
+        // Also prevent Enter/Space from submitting the parent form when focused on the play button
+        player.playButton.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                e.stopPropagation();
+                this.togglePlay(player);
+            }
         });
         
         // Audio events
@@ -128,6 +154,9 @@ class AudioPlayer {
         
         // Progress bar click
         player.progress.parentElement.addEventListener('click', (e) => {
+            // Hindari submit form atau bubbling ke container form
+            e.preventDefault();
+            e.stopPropagation();
             if (player.isLoaded) {
                 const rect = e.currentTarget.getBoundingClientRect();
                 const pos = (e.clientX - rect.left) / rect.width;

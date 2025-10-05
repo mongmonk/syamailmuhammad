@@ -81,6 +81,21 @@ Route::delete('/posts/{post}', [\App\Http\Controllers\Admin\PostsPageController:
 // Admin - Audit (SSR)
 Route::get('/audit', [\App\Http\Controllers\Admin\AuditPageController::class, 'index'])->name('admin.audit.index');
 Route::get('/audit/export', [\App\Http\Controllers\Admin\AuditPageController::class, 'export'])->name('admin.audit.export');
+// Admin - Chapters (SSR)
+Route::get('/chapters', [\App\Http\Controllers\Admin\ChaptersPageController::class, 'index'])->name('admin.chapters.index');
+Route::get('/chapters/create', [\App\Http\Controllers\Admin\ChaptersPageController::class, 'create'])->name('admin.chapters.create');
+Route::post('/chapters', [\App\Http\Controllers\Admin\ChaptersPageController::class, 'store'])->name('admin.chapters.store');
+Route::get('/chapters/{chapter}/edit', [\App\Http\Controllers\Admin\ChaptersPageController::class, 'edit'])->name('admin.chapters.edit');
+Route::patch('/chapters/{chapter}', [\App\Http\Controllers\Admin\ChaptersPageController::class, 'update'])->name('admin.chapters.update');
+Route::delete('/chapters/{chapter}', [\App\Http\Controllers\Admin\ChaptersPageController::class, 'destroy'])->name('admin.chapters.destroy');
+
+// Admin - Hadiths (SSR)
+Route::get('/hadiths', [\App\Http\Controllers\Admin\HadithsPageController::class, 'index'])->name('admin.hadiths.index');
+Route::get('/hadiths/create', [\App\Http\Controllers\Admin\HadithsPageController::class, 'create'])->name('admin.hadiths.create');
+Route::post('/hadiths', [\App\Http\Controllers\Admin\HadithsPageController::class, 'store'])->name('admin.hadiths.store');
+Route::get('/hadiths/{hadith}/edit', [\App\Http\Controllers\Admin\HadithsPageController::class, 'edit'])->name('admin.hadiths.edit');
+Route::patch('/hadiths/{hadith}', [\App\Http\Controllers\Admin\HadithsPageController::class, 'update'])->name('admin.hadiths.update');
+Route::delete('/hadiths/{hadith}', [\App\Http\Controllers\Admin\HadithsPageController::class, 'destroy'])->name('admin.hadiths.destroy');
 });
 // Profile routes
 Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show')->middleware(['security.headers', 'auth', 'not.banned']);

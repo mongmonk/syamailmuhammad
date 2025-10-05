@@ -63,11 +63,16 @@ class SearchService
             ->addSelect(DB::raw($this->tsRankExpression($query) . ' AS relevance'))
             ->orderByDesc('relevance');
         } else {
-            // Fallback untuk sqlite/mysql (tanpa FTS): LIKE-based
-            $builder->where(function ($q) use ($query) {
-                $q->where('arabic_text', 'like', '%' . $query . '%')
-                    ->orWhere('translation', 'like', '%' . $query . '%')
-                    ->orWhere('footnotes', 'like', '%' . $query . '%');
+            // Fallback untuk sqlite/mysql (tanpa FTS): case-insensitive + tokenisasi (kata mirip)
+            $tokens = preg_split('/\s+/', $query, -1, PREG_SPLIT_NO_EMPTY);
+            $tokensLower = array_map(fn ($t) => mb_strtolower($t), $tokens);
+
+            $builder->where(function ($q) use ($tokensLower) {
+                foreach ($tokensLower as $t) {
+                    $q->orWhereRaw('LOWER(arabic_text) LIKE ?', ['%' . $t . '%'])
+                      ->orWhereRaw('LOWER(translation) LIKE ?', ['%' . $t . '%'])
+                      ->orWhereRaw('LOWER(footnotes) LIKE ?', ['%' . $t . '%']);
+                }
             })
             ->orderByDesc($this->likeRelevanceExpression($query));
         }
@@ -142,9 +147,15 @@ class SearchService
             ->orderByDesc('relevance');
         } else {
             $builder->where(function ($q) use ($query) {
-                $q->where('arabic_text', 'like', '%' . $query . '%')
-                    ->orWhere('translation', 'like', '%' . $query . '%')
-                    ->orWhere('footnotes', 'like', '%' . $query . '%');
+                // Case-insensitive + tokenisasi untuk hasil yang "mirip" pada fallback
+                $tokens = preg_split('/\s+/', $query, -1, PREG_SPLIT_NO_EMPTY);
+                $tokensLower = array_map(fn ($t) => mb_strtolower($t), $tokens);
+
+                foreach ($tokensLower as $t) {
+                    $q->orWhereRaw('LOWER(arabic_text) LIKE ?', ['%' . $t . '%'])
+                      ->orWhereRaw('LOWER(translation) LIKE ?', ['%' . $t . '%'])
+                      ->orWhereRaw('LOWER(footnotes) LIKE ?', ['%' . $t . '%']);
+                }
             })
             ->addSelect(DB::raw($this->likeRelevanceExpression($query) . ' AS relevance'))
             ->orderByDesc('relevance');

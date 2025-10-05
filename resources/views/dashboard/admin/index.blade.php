@@ -14,6 +14,7 @@
         <a href="{{ url('/admin/users') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Kelola Pengguna</a>
       </div>
     </div>
+
     <div class="bg-white rounded-lg shadow p-6">
       <h2 class="text-lg font-semibold mb-2">Manajemen Posts</h2>
       <p class="text-sm text-gray-600">Buat, edit, hapus post; pencarian judul dan toggle publish.</p>
@@ -21,6 +22,23 @@
         <a href="{{ url('/admin/posts') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Kelola Posts</a>
       </div>
     </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-lg font-semibold mb-2">Manajemen Bab</h2>
+      <p class="text-sm text-gray-600">Kelola daftar Bab: buat, ubah, hapus, dan urutkan berdasarkan nomor bab.</p>
+      <div class="mt-3">
+        <a href="{{ url('/admin/chapters') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Kelola Bab</a>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-lg font-semibold mb-2">Manajemen Hadits</h2>
+      <p class="text-sm text-gray-600">Kelola hadis per bab: buat, ubah, hapus; nomor unik per bab.</p>
+      <div class="mt-3">
+        <a href="{{ url('/admin/hadiths') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Kelola Hadits</a>
+      </div>
+    </div>
+
     <div class="bg-white rounded-lg shadow p-6">
       <h2 class="text-lg font-semibold mb-2">Audit Log</h2>
       <p class="text-sm text-gray-600">Filter berdasarkan actor, aksi, resource, status; lihat detail dan ekspor.</p>
