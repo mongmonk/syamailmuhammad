@@ -55,6 +55,72 @@ class UsersPageController extends Controller
 
         return response($html);
     }
+    /**
+     * Form buat pengguna baru oleh admin (SSR).
+     */
+    public function create()
+    {
+        return view('admin.users.create');
+    }
+
+    /**
+     * Simpan pengguna baru (SSR).
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:50'],
+            'email' => ['nullable', 'string', 'email', 'max:75'],
+            'phone' => ['required', 'string', new \App\Rules\PhoneNumber()],
+            'password' => ['required', \Illuminate\Validation\Rules\Password::min(8)->letters()->numbers()],
+            'status' => ['nullable', 'string', \Illuminate\Validation\Rule::in([User::STATUS_PENDING, User::STATUS_ACTIVE, User::STATUS_BANNED])],
+            'role' => ['nullable', 'string', \Illuminate\Validation\Rule::in([User::ROLE_USER, User::ROLE_ADMIN])],
+        ]);
+
+        // Normalisasi nomor telepon
+        $normalizedPhone = \App\Support\PhoneUtil::normalize($data['phone']);
+        if ($normalizedPhone === null) {
+            return back()
+                ->withErrors(['phone' => 'Format nomor telepon tidak valid (gunakan 0..., 62..., atau +62...).'])
+                ->withInput();
+        }
+
+        // Blind index untuk cek unik
+        $appKey = (string) config('app.key', '');
+        if (str_starts_with($appKey, 'base64:')) {
+            $appKey = base64_decode(substr($appKey, 7));
+        }
+        $phoneHash = hash_hmac('sha256', $normalizedPhone, $appKey);
+        if (User::where('phone_hash', $phoneHash)->exists()) {
+            return back()
+                ->withErrors(['phone' => 'Nomor telepon sudah digunakan.'])
+                ->withInput();
+        }
+
+        if (!empty($data['email'])) {
+            $normalizedEmail = \Illuminate\Support\Str::lower(trim((string) $data['email']));
+            $emailHash = hash_hmac('sha256', $normalizedEmail, $appKey);
+            if (User::where('email_hash', $emailHash)->exists()) {
+                return back()
+                    ->withErrors(['email' => 'Email sudah digunakan.'])
+                    ->withInput();
+            }
+        }
+
+        // Buat user baru (password otomatis di-hash oleh cast)
+        $user = new User();
+        $user->name = $data['name'];
+        $user->email = $data['email'] ?? null;
+        $user->phone = $normalizedPhone;
+        $user->password = $data['password']; // [User.casts()](app/Models/User.php:53) => 'password' => 'hashed'
+        $user->status = $data['status'] ?? User::STATUS_PENDING;
+        $user->role = $data['role'] ?? User::ROLE_USER;
+        $user->save();
+
+        return redirect()
+            ->route('admin.users.index')
+            ->with('status', 'Pengguna berhasil dibuat.');
+    }
 
     /**
      * Tampilkan form edit status/role pengguna.

@@ -66,9 +66,6 @@
                             <input type="checkbox" name="remember" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:ring-emerald-500">
                             <span class="ml-2 text-sm text-gray-600">Ingat saya</span>
                         </label>
-
-                        <!-- Tautan lupa password akan diaktifkan setelah rute dibuat -->
-                        <a href="{{ route('password.request') }}" class="text-sm text-emerald-600 hover:text-emerald-800">Lupa kata sandi?</a>
                     </div>
 
                     <div>
@@ -80,10 +77,6 @@
                 </form>
             </div>
 
-            <div class="text-center mt-6 text-sm text-gray-600">
-                Belum punya akun?
-                <a href="{{ route('register') }}" class="text-emerald-600 hover:text-emerald-800 font-medium">Daftar</a>
-            </div>
         </div>
     </div>
 </div>

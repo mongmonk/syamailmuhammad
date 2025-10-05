@@ -68,6 +68,8 @@ Route::middleware(['security.headers', 'auth', 'ensure.active', 'role.admin'])->
 
     // Admin - Users (SSR)
     Route::get('/users', [\App\Http\Controllers\Admin\UsersPageController::class, 'index'])->name('admin.users.index');
+    Route::get('/users/create', [\App\Http\Controllers\Admin\UsersPageController::class, 'create'])->name('admin.users.create');
+    Route::post('/users', [\App\Http\Controllers\Admin\UsersPageController::class, 'store'])->name('admin.users.store');
     Route::get('/users/{user}/edit', [\App\Http\Controllers\Admin\UsersPageController::class, 'edit'])->name('admin.users.edit');
     Route::patch('/users/{user}', [\App\Http\Controllers\Admin\UsersPageController::class, 'update'])->name('admin.users.update');
 // Admin - Posts (SSR)

@@ -171,7 +171,7 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'phone' => ['required', 'string', new PhoneNumber()],
             'password' => ['required', 'string'],
-            'remember' => ['nullable', 'boolean'],
+            'remember' => ['sometimes', 'accepted'],
         ]);
 
         if ($validator->fails()) {
@@ -194,7 +194,7 @@ class AuthController extends Controller
                 ->withInput();
         }
 
-        $remember = (bool) $request->input('remember', false);
+        $remember = $request->boolean('remember');
 
         // Cari user menggunakan blind index (phone_hash) lalu verifikasi password
         $appKey = (string) config('app.key', '');
@@ -229,7 +229,7 @@ class AuthController extends Controller
                 ]);
             }
 
-            return redirect()->intended(route('home'))
+            return redirect()->intended(route('dashboard'))
                 ->with('status', 'Login berhasil');
         }
 

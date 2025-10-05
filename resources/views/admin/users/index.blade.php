@@ -43,7 +43,12 @@
     <div class="px-6 py-4 border-b">
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold">Daftar Pengguna</h2>
-        <div class="text-sm text-gray-600">Halaman {{ $users->currentPage() }} dari {{ $users->lastPage() }} · Total {{ $users->total() }}</div>
+        <div class="flex items-center gap-3">
+          <div class="text-sm text-gray-600 hidden sm:block">Halaman {{ $users->currentPage() }} dari {{ $users->lastPage() }} · Total {{ $users->total() }}</div>
+          <a href="{{ route('admin.users.create') }}" class="inline-flex items-center px-3 py-2 rounded-md bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-600">
+            Daftarkan Pengguna
+          </a>
+        </div>
       </div>
     </div>
     <div class="overflow-x-auto">

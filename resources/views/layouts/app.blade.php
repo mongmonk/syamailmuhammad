@@ -8,7 +8,14 @@
         @yield('meta')
         <link rel="canonical" href="{{ url()->current() }}">
         <meta name="theme-color" content="#4f46e5">
-
+        
+        <!-- Icons -->
+        <link rel="icon" type="image/png" href="{{ asset('icon.png') }}">
+        <link rel="shortcut icon" type="image/png" href="{{ asset('icon.png') }}">
+        <link rel="apple-touch-icon" href="{{ asset('icon.png') }}">
+        <link rel="icon" sizes="32x32" href="{{ asset('icon.png') }}">
+        <link rel="icon" sizes="16x16" href="{{ asset('icon.png') }}">
+        
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
@@ -37,7 +44,6 @@
     <body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
 @php($isLanding = request()->routeIs('home') || request()->is('/'))
 @if(!$isLanding)
-    <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:text-emerald-700 focus:px-3 focus:py-2 focus:rounded-md focus:shadow">Lewati ke konten utama</a>
     <!-- Navigation -->
     <header class="bg-white shadow-sm">
             <div class="max-w-7xl mx-auto px-4">
@@ -65,9 +71,6 @@
                                 </form>
                             @else
                                 <a href="{{ route('login') }}" class="text-sm font-medium transition-colors text-gray-700 hover:text-emerald-700">Login</a>
-                                @if (Route::has('register'))
-                                <a href="{{ route('register') }}" class="text-sm font-medium transition-colors text-gray-700 hover:text-emerald-700">Register</a>
-                                @endif
                             @endauth
                         @endif
                     </nav>
@@ -105,9 +108,6 @@
                             </form>
                         @else
                             <a href="{{ route('login') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100 hover:text-emerald-700">Login</a>
-                            @if (Route::has('register'))
-                            <a href="{{ route('register') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-700 hover:bg-gray-100 hover:text-emerald-700">Register</a>
-                            @endif
                         @endauth
                     @endif
                 </div>
