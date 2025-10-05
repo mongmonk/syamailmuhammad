@@ -125,4 +125,11 @@ return [
 
     'version' => env('APP_VERSION', '0.0.0'),
 
+    // Landing Page env-driven content
+    'footer_description' => env('FOOTER_DESCRIPTION', 'Alat produktivitas tim dengan fokus pada hasil, bukan aktivitas.'),
+    'contact_email' => env('CONTACT_EMAIL', env('MAIL_FROM_ADDRESS', 'halo@example.com')),
+    'contact_phone' => env('CONTACT_PHONE', '+62 21 0000 0000'),
+    'contact_twitter_url' => env('CONTACT_TWITTER_URL', '#'),
+    'contact_linkedin_url' => env('CONTACT_LINKEDIN_URL', '#'),
+    'hero_image_desc' => env('HERO_IMAGE_DESC', 'Tangkapan antarmuka produk: daftar tugas, ringkasan rapat, dan ringkasan keputusan.'),
 ];

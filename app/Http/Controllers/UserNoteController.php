@@ -7,6 +7,7 @@ use App\Models\UserNote;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\AuditLogger;
 
 class UserNoteController extends Controller
 {
@@ -65,6 +66,19 @@ class UserNoteController extends Controller
             ]
         );
 
+        // Audit: catatan disimpan/di-update (upsert)
+        app(AuditLogger::class)->allow(
+            'note.store',
+            'user_note',
+            (string) $note->id,
+            null,
+            [
+                'hadith_id' => (string) $note->hadith_id,
+                'note_length' => mb_strlen($note->note_content),
+            ],
+            $request
+        );
+
         return response()->json([
             'success' => true,
             'note' => [
@@ -91,6 +105,19 @@ class UserNoteController extends Controller
         $note->note_content = $validated['note_content'];
         $note->save();
 
+        // Audit: catatan diperbarui
+        app(AuditLogger::class)->allow(
+            'note.update',
+            'user_note',
+            (string) $note->id,
+            null,
+            [
+                'hadith_id' => (string) $note->hadith_id,
+                'note_length' => mb_strlen($note->note_content),
+            ],
+            $request
+        );
+
         return response()->json([
             'success' => true,
             'note' => [
@@ -109,6 +136,18 @@ class UserNoteController extends Controller
         $deleted = UserNote::where('user_id', Auth::id())
             ->where('hadith_id', $hadith->id)
             ->delete();
+
+        // Audit: catatan dihapus
+        app(AuditLogger::class)->allow(
+            'note.destroy',
+            'user_note',
+            (string) $hadith->id,
+            null,
+            [
+                'hadith_id' => (string) $hadith->id,
+                'deleted_count' => (int) $deleted,
+            ]
+        );
 
         return response()->json([
             'success' => (bool) $deleted,

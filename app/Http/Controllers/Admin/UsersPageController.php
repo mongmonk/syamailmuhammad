@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Validation\Rule;
+use App\Services\AuditLogger;
 
 class UsersPageController extends Controller
 {
@@ -103,6 +104,22 @@ class UsersPageController extends Controller
         if (! empty($details)) {
             $message .= ' — ' . implode(', ', $details);
         }
+
+        // Audit: admin memperbarui user
+        app(AuditLogger::class)->allow(
+            'admin.user.update',
+            'user',
+            (string) $user->id,
+            null,
+            [
+                'changed' => $changed,
+                'new' => [
+                    'status' => $user->status,
+                    'role' => $user->role,
+                ],
+            ],
+            $request
+        );
         
         return redirect()
             ->route('admin.users.index', $request->query())

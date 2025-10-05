@@ -12,6 +12,8 @@ use App\Services\CacheService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+use App\Jobs\ExtractAudioMetadata;
 
 class HadithsPageController extends Controller
 {
@@ -146,10 +148,42 @@ class HadithsPageController extends Controller
             $storedPath = $file->store('audio', 'local'); // disimpan di storage/app/private/audio
             $size = $file->getSize();
 
-            AudioFile::create([
+            // Logging untuk validasi asumsi (durasi belum dihitung)
+            $absolutePath = Storage::disk('local')->path($storedPath);
+            $hasGetID3 = class_exists(\getID3::class);
+            $hasFFMpeg = class_exists(\FFMpeg\FFMpeg::class);
+
+            Log::info('Audio upload received (store)', [
+                'hadith_id' => $hadith->id,
+                'stored_path' => $storedPath,
+                'absolute_path' => $absolutePath,
+                'size_bytes' => $size,
+                'has_getid3' => $hasGetID3,
+                'has_ffmpeg' => $hasFFMpeg,
+            ]);
+
+            // Hitung durasi sinkron menggunakan getID3
+            $durationSeconds = null;
+            if (class_exists(\getID3::class)) {
+                $getID3 = new \getID3();
+                $info = $getID3->analyze($absolutePath);
+                if (isset($info['playtime_seconds'])) {
+                    $durationSeconds = (int) round((float) $info['playtime_seconds']);
+                }
+            }
+
+            Log::info('Audio upload analyzed (store)', [
+                'hadith_id' => $hadith->id,
+                'stored_path' => $storedPath,
+                'absolute_path' => $absolutePath,
+                'size_bytes' => $size,
+                'computed_duration' => $durationSeconds,
+            ]);
+
+            $created = AudioFile::create([
                 'hadith_id' => $hadith->id,
                 'file_path' => $storedPath,
-                'duration' => null,
+                'duration' => $durationSeconds,
                 'file_size' => $size,
             ]);
         }
@@ -229,23 +263,76 @@ class HadithsPageController extends Controller
             $storedPath = $file->store('audio', 'local'); // disimpan di storage/app/private/audio
             $size = $file->getSize();
 
+            // Logging untuk validasi asumsi (durasi belum dihitung)
+            $absolutePath = Storage::disk('local')->path($storedPath);
+            $hasGetID3 = class_exists(\getID3::class);
+            $hasFFMpeg = class_exists(\FFMpeg\FFMpeg::class);
+
+            Log::info('Audio upload received (update)', [
+                'hadith_id' => $hadith->id,
+                'stored_path' => $storedPath,
+                'absolute_path' => $absolutePath,
+                'size_bytes' => $size,
+                'has_getid3' => $hasGetID3,
+                'has_ffmpeg' => $hasFFMpeg,
+                'existing_audio_id' => optional($hadith->audioFile)->id,
+            ]);
+
             $existing = $hadith->audioFile;
             if ($existing) {
                 // Hapus file lama jika ada
                 if ($existing->file_path) {
                     Storage::disk('local')->delete($existing->file_path);
                 }
+                // Hitung durasi sinkron menggunakan getID3
+                $durationSeconds = null;
+                if (class_exists(\getID3::class)) {
+                    $getID3 = new \getID3();
+                    $info = $getID3->analyze($absolutePath);
+                    if (isset($info['playtime_seconds'])) {
+                        $durationSeconds = (int) round((float) $info['playtime_seconds']);
+                    }
+                }
+
                 $existing->file_path = $storedPath;
                 $existing->file_size = $size;
-                $existing->duration = null;
+                $existing->duration = $durationSeconds;
                 $existing->save();
+
+                Log::info('Audio file replaced', [
+                    'audio_file_id' => $existing->id,
+                    'new_path' => $storedPath,
+                    'size_bytes' => $size,
+                    'computed_duration' => $durationSeconds,
+                ]);
+
+                // Durasi dihitung sinkron; tidak perlu dispatch job di sini
             } else {
-                AudioFile::create([
+                // Hitung durasi sinkron menggunakan getID3
+                $durationSeconds = null;
+                if (class_exists(\getID3::class)) {
+                    $getID3 = new \getID3();
+                    $info = $getID3->analyze($absolutePath);
+                    if (isset($info['playtime_seconds'])) {
+                        $durationSeconds = (int) round((float) $info['playtime_seconds']);
+                    }
+                }
+
+                $created = AudioFile::create([
                     'hadith_id' => $hadith->id,
                     'file_path' => $storedPath,
-                    'duration' => null,
+                    'duration' => $durationSeconds,
                     'file_size' => $size,
                 ]);
+
+                Log::info('Audio file created', [
+                    'audio_file_id' => $created->id,
+                    'path' => $storedPath,
+                    'size_bytes' => $size,
+                    'computed_duration' => $durationSeconds,
+                ]);
+
+                // Durasi dihitung sinkron; tidak perlu dispatch job di sini
             }
 
             $changed[] = 'audio_file';

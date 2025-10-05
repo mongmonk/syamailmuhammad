@@ -8,6 +8,7 @@ use App\Models\SearchHistory;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
+use App\Services\AuditLogger;
 
 class SearchController extends Controller
 {
@@ -53,6 +54,20 @@ class SearchController extends Controller
         if (auth()->check()) {
             $this->saveSearchHistory(auth()->id(), $query, $results->count());
         }
+
+        // Audit: search request
+        app(AuditLogger::class)->allow(
+            'search',
+            'hadith.search',
+            null,
+            null,
+            [
+                'query' => mb_substr($query, 0, 100),
+                'count' => $results->count(),
+                'chapter_id' => $chapterId ? (string) $chapterId : null,
+            ],
+            $request
+        );
 
         return response()->json([
             'query' => $query,
@@ -191,6 +206,24 @@ class SearchController extends Controller
         if (auth()->check()) {
             $this->saveSearchHistory(auth()->id(), $query, $results->count());
         }
+
+        // Audit: advanced search request
+        app(AuditLogger::class)->allow(
+            'search.advanced',
+            'hadith.search',
+            null,
+            null,
+            [
+                'query' => mb_substr($query, 0, 100),
+                'count' => $results->count(),
+                'filters' => [
+                    'limit' => $filters['limit'] ?? null,
+                    'chapter_id' => $filters['chapter_id'] ?? null,
+                    'mode' => $filters['mode'] ?? null,
+                ],
+            ],
+            $request
+        );
 
         return view('search.results', [
             'query' => $query,
