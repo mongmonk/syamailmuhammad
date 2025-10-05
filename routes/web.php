@@ -77,6 +77,10 @@ Route::post('/posts', [\App\Http\Controllers\Admin\PostsPageController::class, '
 Route::get('/posts/{post}/edit', [\App\Http\Controllers\Admin\PostsPageController::class, 'edit'])->name('admin.posts.edit');
 Route::patch('/posts/{post}', [\App\Http\Controllers\Admin\PostsPageController::class, 'update'])->name('admin.posts.update');
 Route::delete('/posts/{post}', [\App\Http\Controllers\Admin\PostsPageController::class, 'destroy'])->name('admin.posts.destroy');
+
+// Admin - Audit (SSR)
+Route::get('/audit', [\App\Http\Controllers\Admin\AuditPageController::class, 'index'])->name('admin.audit.index');
+Route::get('/audit/export', [\App\Http\Controllers\Admin\AuditPageController::class, 'export'])->name('admin.audit.export');
 });
 // Profile routes
 Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show')->middleware(['security.headers', 'auth', 'not.banned']);
