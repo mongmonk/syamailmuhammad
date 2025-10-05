@@ -36,7 +36,7 @@
       <p class="mt-3 text-gray-700">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
     @endif
 
-    <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+    <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center pb-8 sm:pb-10">
       <a href="{{ url()->previous() }}"
          class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300">
         Kembali
@@ -53,11 +53,11 @@
       @endguest
     </div>
 
-    <hr class="my-8">
+    <div class="mt-10 border-t border-gray-200"></div>
 
-    <div class="text-left">
+    <div class="text-left pt-6 pl-8 pr-6">
       <h2 class="text-sm font-semibold text-gray-600">Detail</h2>
-      <ul class="mt-2 text-sm text-gray-500 list-disc pl-6 space-y-1">
+      <ul class="mt-2 text-sm text-gray-600 list-disc list-inside space-y-1">
         <li>Kode: 403 FORBIDDEN</li>
         @if($isBanned)
           <li>Alasan: {{ trans('errors.USER_STATUS_BANNED') }}</li>
