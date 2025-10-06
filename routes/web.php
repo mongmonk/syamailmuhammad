@@ -116,6 +116,7 @@ Route::get('/search/advanced', [SearchController::class, 'advanced'])->name('sea
 Route::middleware(['security.headers', 'auth', 'not.banned'])->group(function () {
     // Progress
     Route::get('/progress', [ProgressController::class, 'index'])->name('progress.index');
+    Route::post('/progress', [ProgressController::class, 'store'])->name('progress.store');
     // Bookmarks
     Route::get('/bookmarks', [BookmarkController::class, 'index'])->name('bookmarks.index');
     Route::post('/bookmarks', [BookmarkController::class, 'store'])->name('bookmarks.store');

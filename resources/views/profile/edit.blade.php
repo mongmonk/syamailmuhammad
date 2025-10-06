@@ -40,7 +40,7 @@
                                    value="{{ old('name', $user->name) }}">
                         </div>
                         <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon (opsional)</label>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Nomor Telepon</label>
                             <input id="phone" name="phone" type="text" autocomplete="tel"
                                    class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500"
                                    value="{{ old('phone', $user->phone) }}">
@@ -48,7 +48,7 @@
                     </div>
 
                     <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email (opsional)</label>
                         <input id="email" name="email" type="email" autocomplete="email"
                                class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-emerald-500 focus:border-emerald-500 break-all"
                                value="{{ old('email', $user->email) }}">

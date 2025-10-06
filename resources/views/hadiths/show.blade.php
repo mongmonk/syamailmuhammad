@@ -95,6 +95,36 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+// Auto-post progres baca saat halaman Hadits dibuka
+(function autoPostHadithProgress() {
+    try {
+        var csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (!csrf) { console.warn('CSRF token tidak ditemukan'); return; }
+
+        fetch('{{ route('progress.store') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrf
+            },
+            body: JSON.stringify({
+                type: 'hadith',
+                resource_id: {{ $hadith->id }},
+                position: {{ (int) ($hadith->hadith_number ?? 0) }}
+            })
+        })
+        .then(function (resp) { if (!resp.ok) throw resp; return resp.json(); })
+        .then(function (data) {
+            console.debug('syamail.progress_saved', data);
+        })
+        .catch(function (err) {
+            console.warn('syamail.progress_save_failed', err);
+        });
+    } catch (e) {
+        console.warn('syamail.progress_save_error', e);
+    }
+})();
     // Bookmark functionality
     const bookmarkBtn = document.getElementById('bookmark-btn');
     const bookmarkModal = document.getElementById('bookmark-modal');

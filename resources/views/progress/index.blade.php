@@ -17,19 +17,25 @@
             <table class="min-w-full text-sm">
                 <thead>
                     <tr class="border-b">
-                        <th class="text-left py-2 pr-4">Sumber</th>
-                        <th class="text-left py-2 pr-4">ID</th>
-                        <th class="text-left py-2 pr-4">Posisi</th>
+                        <th class="text-left py-2 pr-4">Item</th>
                         <th class="text-left py-2">Diperbarui</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($progress as $item)
                         <tr class="border-b">
-                            <td class="py-2 pr-4 capitalize">{{ $item['type'] }}</td>
-                            <td class="py-2 pr-4">{{ $item['resource_id'] }}</td>
-                            <td class="py-2 pr-4">{{ $item['position'] }}</td>
-                            <td class="py-2">{{ $item['updated_at'] ?? '-' }}</td>
+                            <td class="py-2 pr-4">
+                                @if (!empty($item['url']))
+                                    <a href="{{ $item['url'] }}" class="text-emerald-600 hover:text-emerald-800 font-medium">
+                                        {{ $item['label'] ?? (ucfirst($item['type']) . ' ' . $item['resource_id']) }}
+                                    </a>
+                                @else
+                                    <span class="capitalize">
+                                        {{ $item['label'] ?? (ucfirst($item['type']) . ' ' . $item['resource_id']) }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="py-2">{{ $item['updated_at_human'] ?? ($item['updated_at'] ?? '-') }}</td>
                         </tr>
                     @endforeach
                 </tbody>

@@ -84,3 +84,37 @@
 
 <!-- CSS untuk arabic-text sudah dipindahkan ke resources/css/app.css -->
 @endsection
+@push('scripts')
+<script>
+// Auto-post progres baca saat halaman Bab dibuka
+document.addEventListener('DOMContentLoaded', function () {
+    try {
+        var csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (!csrf) { console.warn('CSRF token tidak ditemukan'); return; }
+
+        fetch('{{ route('progress.store') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrf
+            },
+            body: JSON.stringify({
+                type: 'chapter',
+                resource_id: {{ $chapter->id }},
+                position: 0
+            })
+        })
+        .then(function (resp) { if (!resp.ok) throw resp; return resp.json(); })
+        .then(function (data) {
+            console.debug('syamail.progress_saved.chapter', data);
+        })
+        .catch(function (err) {
+            console.warn('syamail.progress_save_failed.chapter', err);
+        });
+    } catch (e) {
+        console.warn('syamail.progress_save_error.chapter', e);
+    }
+});
+</script>
+@endpush

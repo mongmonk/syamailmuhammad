@@ -39,7 +39,12 @@
     </div>
   </div>
 
-  <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="bg-white rounded-lg shadow p-6">
+      <h2 class="text-lg font-semibold mb-2">Daftar Bab</h2>
+      <p class="text-gray-500 text-sm">Jelajahi seluruh Bab dan mulai membaca hadits berdasarkan bab.</p>
+      <a href="{{ route('chapters.index') }}" data-testid="btn-list-bab" class="mt-3 inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">List Bab</a>
+    </div>
     <div class="bg-white rounded-lg shadow p-6">
       <h2 class="text-lg font-semibold mb-2">Bookmark Terbaru</h2>
       <p class="text-gray-500 text-sm">Masuk ke halaman Bookmark untuk melihat daftar lengkap.</p>
