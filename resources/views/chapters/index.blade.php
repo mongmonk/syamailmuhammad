@@ -1,13 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar Bab - Buku ' . env('APP_NAME'))
+@section('title', 'Daftar Bab - Buku ' . config('app.name', 'Syamail Muhammad'))
 
 @section('content')
 <div class="bg-white py-12">
     <div class="container mx-auto px-4">
         <div class="max-w-4xl mx-auto">
             <div class="text-center mb-12">
-                <h1 dusk="page-title" class="text-3xl font-bold text-gray-900 mb-4">Kitab {{ env('APP_NAME') }}</h1>
+                <h1 dusk="page-title" class="text-3xl font-bold text-gray-900 mb-4">Kitab {{ config('app.name', 'Syamail Muhammad') }}</h1>
                 <p class="text-lg text-gray-600">
                     Karya Imam At-Tirmidzi yang menghimpun 56 bab yang menggambarkan pribadi dan fisik Rasulullah ﷺ secara terperinci
                 </p>
