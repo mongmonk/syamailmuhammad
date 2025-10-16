@@ -17,13 +17,35 @@
         <link rel="icon" sizes="16x16" href="{{ asset('icon.png') }}">
         
         <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-
-        <!-- Arabic Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=KFGQPC+Uthman+Taha+Naskh&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Mulish:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <style>
+            /* Local Arabic font */
+            @font-face {
+                font-family: 'LPMQ IsepMisbah';
+                src: url('{{ asset('LPMQ IsepMisbah.ttf') }}') format('truetype');
+                font-weight: normal;
+                font-style: normal;
+                font-display: swap;
+            }
+
+            /* Set default alphabet (Latin) font to Mulish */
+            html, body {
+                font-family: 'Mulish', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+            }
+
+            /* Arabic text styles use local font */
+            .arabic-text, .arabic-heading {
+                font-family: 'LPMQ IsepMisbah', serif;
+                line-height: 2.0;
+                font-size: 1.25rem;
+            }
+            .arabic-heading {
+                font-weight: 600;
+                font-size: 1.5rem;
+            }
+        </style>
 
         <!-- Styles / Scripts -->
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))

@@ -52,7 +52,7 @@
                                 Bab {{ $h->chapter?->chapter_number }} • Hadits {{ $h->hadith_number }}
                             </div>
                             <a href="{{ route('hadiths.show', $h->id) }}" class="text-sm text-emerald-700 hover:text-emerald-800">
-                                Lihat Detail
+                                Lihat Detail (audio & catatan)
                             </a>
                         </div>
                         <div class="px-6 py-4">

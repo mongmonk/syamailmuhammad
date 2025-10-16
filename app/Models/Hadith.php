@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Database\Factories\HadithFactory;
+use App\Traits\SanitizesSaw;
 
 class Hadith extends Model
 {
     use HasFactory;
+    use SanitizesSaw;
 
     protected $fillable = [
         'chapter_id',
@@ -19,6 +21,15 @@ class Hadith extends Model
         'translation',
         'footnotes',
         'hadith_number',
+    ];
+
+    /**
+     * Atribut yang akan otomatis disanitasi:
+     * - Mengganti "Nabi|Muhammad|Rasulullah SAW" menjadi "Nabi|Muhammad|Rasulullah ﷺ"
+     */
+    protected array $sawSanitize = [
+        'translation',
+        'footnotes',
     ];
 
     public function chapter(): BelongsTo

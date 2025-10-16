@@ -79,7 +79,7 @@
                 name="title"
                 value="{{ old('title') }}"
                 class="block w-full border border-gray-300 px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600"
-                placeholder="Contoh: Bab Pertama: Sifat Rupa Rasulullah SAW"
+                placeholder="Contoh: Bab Pertama: Sifat Rupa Rasulullah ﷺ"
                 maxlength="255"
                 required
                 aria-describedby="help_title"
@@ -122,7 +122,7 @@
             <h2 class="text-sm font-semibold text-gray-800">Panduan Singkat</h2>
           </div>
           <div class="px-5 py-4 space-y-3 text-sm text-gray-700">
-            <p>Gunakan penamaan bab yang konsisten, contoh: <em>Bab Pertama: Sifat Rupa Rasulullah SAW</em>.</p>
+            <p>Gunakan penamaan bab yang konsisten, contoh: <em>Bab Pertama: Sifat Rupa Rasulullah ﷺ</em>.</p>
             <p>Nomor bab mempengaruhi urutan tampil pada halaman publik.</p>
             <p>Pastikan deskripsi tidak terlalu panjang; ringkas dan informatif.</p>
           </div>

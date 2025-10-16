@@ -93,7 +93,7 @@
         <!-- Visual cover -->
         <div>
           <figure class="relative rounded-xl border border-gray-200 bg-white p-3 shadow-lg">
-            <img src="{{ asset('buku.jpg') }}"
+            <img src="{{ asset('masjid.jpg') }}"
                  alt="Sampul buku Syamail Muhammad — Imam at‑Tirmidzi"
                  width="640" height="360"
                  class="w-full h-auto rounded-lg object-cover"

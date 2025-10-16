@@ -63,7 +63,7 @@
                     
                     <div class="flex justify-end">
                         <a href="{{ route('hadiths.show', $hadith->id) }}" class="text-emerald-600 hover:text-emerald-800 font-medium">
-                            Lihat Detail
+                            Lihat Detail (audio & catatan)
                         </a>
                     </div>
                 </div>
