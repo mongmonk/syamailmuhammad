@@ -10,11 +10,11 @@
         <meta name="theme-color" content="#4f46e5">
         
         <!-- Icons -->
-        <link rel="icon" type="image/png" href="{{ asset('icon.png') }}">
-        <link rel="shortcut icon" type="image/png" href="{{ asset('icon.png') }}">
-        <link rel="apple-touch-icon" href="{{ asset('icon.png') }}">
-        <link rel="icon" sizes="32x32" href="{{ asset('icon.png') }}">
-        <link rel="icon" sizes="16x16" href="{{ asset('icon.png') }}">
+        <link rel="icon" type="image/jpg" href="{{ asset('icon.jpg') }}">
+        <link rel="shortcut icon" type="image/jpg" href="{{ asset('icon.jpg') }}">
+        <link rel="apple-touch-icon" href="{{ asset('icon.jpg') }}">
+        <link rel="icon" sizes="32x32" href="{{ asset('icon.jpg') }}">
+        <link rel="icon" sizes="16x16" href="{{ asset('icon.jpg') }}">
         
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
