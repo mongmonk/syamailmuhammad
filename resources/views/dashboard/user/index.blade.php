@@ -29,14 +29,6 @@
         <li><a class="text-emerald-700 hover:underline" href="{{ route('progress.index') }}">Progres Baca</a></li>
       </ul>
     </div>
-    <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-lg font-semibold mb-2">Kebijakan Akses</h2>
-      <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
-        <li>401: belum login.</li>
-        <li>403: pending/banned sesuai endpoint.</li>
-        <li>Konten bab/hadits/search form memerlukan status aktif.</li>
-      </ul>
-    </div>
   </div>
 
   <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">

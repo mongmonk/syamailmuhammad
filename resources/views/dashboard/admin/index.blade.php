@@ -48,15 +48,5 @@
       </div>
     </div>
   </div>
-  <div class="mt-8">
-    <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-lg font-semibold mb-2">Kebijakan & Catatan</h2>
-      <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
-        <li>Halaman ini hanya untuk admin aktif.</li>
-        <li>Semua aksi akan terekam di Audit Log.</li>
-        <li>Gunakan filter untuk pencarian cepat dan paginasi untuk navigasi.</li>
-      </ul>
-    </div>
-  </div>
 </div>
 @endsection

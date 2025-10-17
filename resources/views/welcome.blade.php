@@ -8,12 +8,12 @@
 <meta property="og:title" content="Syamail Muhammad — Mengenal Pribadi Agung Rasulullah ﷺ">
 <meta property="og:description" content="Membaca Syamail secara terstruktur dengan fitur modern: bab, bookmark, catatan, progres, audio, dan pencarian.">
 <meta property="og:url" content="{{ url()->current() }}">
-<meta property="og:image" content="{{ asset('buku.jpg') }}">
+<meta property="og:image" content="{{ asset('masjid.jpg') }}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Syamail Muhammad — Mengenal Pribadi Agung Rasulullah ﷺ">
 <meta name="twitter:description" content="Baca Syamail secara terstruktur dengan fitur modern.">
-<meta name="twitter:image" content="{{ asset('buku.jpg') }}">
-<link rel="preload" as="image" href="{{ asset('buku.jpg') }}">
+<meta name="twitter:image" content="{{ asset('masjid.jpg') }}">
+<link rel="preload" as="image" href="{{ asset('masjid.jpg') }}">
 
 <!-- JSON-LD: Book -->
 <script type="application/ld+json">
@@ -29,7 +29,7 @@
   "inLanguage": "id",
   "genre": "Sirah, Hadits",
   "url": "{{ url('/') }}",
-  "image": "{{ asset('buku.jpg') }}",
+  "image": "{{ asset('masjid.jpg') }}",
   "description": "Kumpulan hadits tentang sifat, akhlak, dan kehidupan Nabi Muhammad ﷺ yang disusun oleh Imam at-Tirmidzi.",
   "offers": {
     "@@type": "Offer",
