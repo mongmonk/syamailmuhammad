@@ -45,19 +45,19 @@ class EncryptedString implements CastsAttributes
         $encryptionService = App::make(UserEncryptionService::class);
 
         if ($value === null || $value === '') {
-            // Kembalikan array agar kolom hash ikut di-null-kan secara atomik
+            // PERBAIKAN: Kembalikan null bukan string kosong untuk menghindari unique constraint violation
             if ($key === 'phone') {
                 return [
-                    'phone' => $value,
+                    'phone' => null,
                     'phone_hash' => null,
                 ];
             } elseif ($key === 'email') {
                 return [
-                    'email' => $value,
+                    'email' => null,
                     'email_hash' => null,
                 ];
             }
-            return $value;
+            return null;
         }
 
         // Normalisasi sebelum enkripsi dan hashing
