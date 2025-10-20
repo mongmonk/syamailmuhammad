@@ -193,7 +193,7 @@ class HadithsPageController extends Controller
         $this->cache->clearHadithCache($hadith->id);
 
         return redirect()
-            ->route('admin.hadiths.index')
+            ->route('admin.hadiths.edit', $hadith->id)
             ->with('status', 'Hadits dibuat — Bab ' . $hadith->chapter_id . ' No. ' . $hadith->hadith_number);
     }
 
@@ -297,14 +297,7 @@ class HadithsPageController extends Controller
                 $existing->file_path = $storedPath;
                 $existing->file_size = $size;
                 $existing->duration = $durationSeconds;
-                $existing->save();
-
-                Log::info('Audio file replaced', [
-                    'audio_file_id' => $existing->id,
-                    'new_path' => $storedPath,
-                    'size_bytes' => $size,
-                    'computed_duration' => $durationSeconds,
-                ]);
+                $existing->save(); // Ini akan otomatis mengupdate updated_at
 
                 // Durasi dihitung sinkron; tidak perlu dispatch job di sini
             } else {
@@ -325,13 +318,6 @@ class HadithsPageController extends Controller
                     'file_size' => $size,
                 ]);
 
-                Log::info('Audio file created', [
-                    'audio_file_id' => $created->id,
-                    'path' => $storedPath,
-                    'size_bytes' => $size,
-                    'computed_duration' => $durationSeconds,
-                ]);
-
                 // Durasi dihitung sinkron; tidak perlu dispatch job di sini
             }
 
@@ -343,7 +329,7 @@ class HadithsPageController extends Controller
         $this->cache->clearChapterWithHadithsCache($hadith->chapter_id);
 
         return redirect()
-            ->route('admin.hadiths.index', $request->query())
+            ->route('admin.hadiths.edit', $hadith->id)
             ->with('status', 'Hadits diperbarui — ' . implode(', ', $changed));
     }
 

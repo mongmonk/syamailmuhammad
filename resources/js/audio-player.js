@@ -194,8 +194,9 @@ class AudioPlayer {
         player.loadingIndicator.classList.remove('hidden');
         
         try {
-            // Fetch audio URL
-            const response = await fetch(`/audio/${player.audioId}/url`);
+            // Fetch audio URL dengan cache busting timestamp
+            const timestamp = new Date().getTime();
+            const response = await fetch(`/audio/${player.audioId}/url?t=${timestamp}`);
             
             if (!response.ok) {
                 throw new Error('Failed to load audio URL');
@@ -203,8 +204,20 @@ class AudioPlayer {
             
             const data = await response.json();
             
-            // Set audio source
-            player.audioElement.src = data.url;
+            // Tambahkan cache busting parameter ke URL audio
+            const audioUrlWithCache = data.url.includes('?')
+                ? `${data.url}&_cb=${timestamp}`
+                : `${data.url}?_cb=${timestamp}`;
+            
+            console.log('Loading audio with cache busting:', {
+                originalUrl: data.url,
+                cacheBustedUrl: audioUrlWithCache,
+                audioId: player.audioId,
+                timestamp: timestamp
+            });
+            
+            // Set audio source dengan cache busting
+            player.audioElement.src = audioUrlWithCache;
             player.audioElement.preload = 'metadata';
             
             // Load audio metadata

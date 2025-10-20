@@ -226,3 +226,33 @@
   </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+// Cache busting untuk audio saat halaman edit dibuka
+(function bustAudioCache() {
+    try {
+        // Force reload audio elements to prevent caching
+        const audioElements = document.querySelectorAll('audio');
+        audioElements.forEach(function(audioEl) {
+            const currentSrc = audioEl.src;
+            if (currentSrc && currentSrc.includes('/audio/')) {
+                // Add timestamp to force reload
+                const separator = currentSrc.includes('?') ? '&' : '?';
+                const newSrc = currentSrc + separator + '_reload=' + new Date().getTime();
+                console.log('Busting audio cache on edit page:', {
+                    oldSrc: currentSrc,
+                    newSrc: newSrc
+                });
+                audioEl.src = newSrc;
+                audioEl.load(); // Force reload
+            }
+        });
+    } catch (e) {
+        console.warn('Audio cache busting failed:', e);
+    }
+})();
+});
+</script>
+@endpush

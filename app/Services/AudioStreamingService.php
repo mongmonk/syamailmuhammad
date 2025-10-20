@@ -18,7 +18,9 @@ class AudioStreamingService
      */
     public function getAudioUrl(AudioFile $audioFile): string
     {
-        return route('audio.stream', ['audioFile' => $audioFile->id]);
+        // Tambahkan timestamp untuk cache busting
+        $timestamp = $audioFile->updated_at ? $audioFile->updated_at->timestamp : time();
+        return route('audio.stream', ['audioFile' => $audioFile->id]) . "?_v={$timestamp}";
     }
     
     /**
@@ -33,10 +35,6 @@ class AudioStreamingService
         $path = Storage::disk('local')->path($audioFile->file_path);
         
         if (!file_exists($path)) {
-            Log::warning('Audio file not found', [
-                'audio_file_id' => $audioFile->id,
-                'path' => $path
-            ]);
             abort(404, 'Audio file not found');
         }
         
@@ -45,7 +43,11 @@ class AudioStreamingService
 
         // HTTP caching metadata
         $lastModified = filemtime($path);
-        $etag = '"' . md5_file($path) . '"';
+        $fileHash = md5_file($path);
+        
+        // Tambahkan database updated_at ke ETag untuk memaksa refresh saat update
+        $dbUpdatedAt = $audioFile->updated_at ? $audioFile->updated_at->timestamp : 0;
+        $etag = '"' . $fileHash . '-' . $dbUpdatedAt . '"';
 
         // Conditional GET
         $ifNoneMatch = $request->header('If-None-Match');
@@ -53,17 +55,11 @@ class AudioStreamingService
 
         if (($ifNoneMatch && trim($ifNoneMatch) === $etag) ||
             ($ifModifiedSince && strtotime($ifModifiedSince) >= $lastModified)) {
-            Log::info('Audio stream conditional 304', [
-                'audio_file_id' => $audioFile->id,
-                'etag' => $etag,
-                'last_modified' => $lastModified,
-                'if_none_match' => $ifNoneMatch,
-                'if_modified_since' => $ifModifiedSince
-            ]);
             return response('', 304)->withHeaders([
                 'ETag' => $etag,
                 'Last-Modified' => gmdate('D, d M Y H:i:s', $lastModified) . ' GMT',
-                'Cache-Control' => 'public, max-age=86400, immutable',
+                // Kurangi cache time untuk development dan tambahkan max-age yang lebih singkat
+                'Cache-Control' => 'public, max-age=300, must-revalidate',
             ]);
         }
         
@@ -75,32 +71,14 @@ class AudioStreamingService
         $status = 200;
         
         if ($range) {
-            Log::info('Audio stream range requested', [
-                'audio_file_id' => $audioFile->id,
-                'range_header' => $range,
-                'file_size' => $fileSize
-            ]);
-
             if (preg_match('/bytes=\h*(\d+)-(\d*)[\D.*]?/i', $range, $matches)) {
                 $start = intval($matches[1]);
                 if (!empty($matches[2])) {
                     $end = intval($matches[2]);
                 }
-                Log::info('Audio stream range parsed', [
-                    'audio_file_id' => $audioFile->id,
-                    'start' => $start,
-                    'end' => $end,
-                    'file_size' => $fileSize
-                ]);
             }
             
             if ($start > $end || $start > $fileSize - 1 || $end >= $fileSize) {
-                Log::warning('Audio stream invalid range', [
-                    'audio_file_id' => $audioFile->id,
-                    'start' => $start,
-                    'end' => $end,
-                    'file_size' => $fileSize
-                ]);
                 abort(416, 'Requested Range Not Satisfiable');
             }
             
@@ -112,7 +90,8 @@ class AudioStreamingService
             'Content-Type' => $mimeType,
             'Accept-Ranges' => 'bytes',
             'Content-Length' => $length,
-            'Cache-Control' => 'public, max-age=86400, immutable',
+            // Kurangi cache time untuk development dan tambahkan max-age yang lebih singkat
+            'Cache-Control' => 'public, max-age=300, must-revalidate',
             'ETag' => $etag,
             'Last-Modified' => gmdate('D, d M Y H:i:s', $lastModified) . ' GMT',
             // Untuk respons penuh (200 OK), Content-Range harus berakhir di fileSize-1
@@ -121,15 +100,6 @@ class AudioStreamingService
                 : "bytes 0-" . ($fileSize - 1) . "/{$fileSize}",
         ];
         
-        Log::info('Audio stream response', [
-            'audio_file_id' => $audioFile->id,
-            'status' => $status,
-            'content_range' => ($status == 206
-                ? "bytes {$start}-{$end}/{$fileSize}"
-                : "bytes 0-" . ($fileSize - 1) . "/{$fileSize}"),
-            'content_length' => $length,
-            'mime' => $mimeType
-        ]);
         
         return response()->stream(function () use ($path, $start, $end) {
             $fp = fopen($path, 'rb');
