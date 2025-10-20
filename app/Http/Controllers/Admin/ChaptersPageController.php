@@ -122,7 +122,7 @@ class ChaptersPageController extends Controller
         $this->cache->clearChapterWithHadithsCache($chapter->id);
 
         return redirect()
-            ->route('admin.chapters.index')
+            ->route('admin.chapters.edit', $chapter->id)
             ->with('status', 'Chapter dibuat — Bab ' . $chapter->chapter_number . ': ' . $chapter->title);
     }
 
@@ -179,7 +179,7 @@ class ChaptersPageController extends Controller
         $this->cache->clearChapterWithHadithsCache($chapter->id);
 
         return redirect()
-            ->route('admin.chapters.index', $request->query())
+            ->route('admin.chapters.edit', $chapter->id)
             ->with('status', 'Chapter diperbarui — ' . implode(', ', $changed));
     }
 
