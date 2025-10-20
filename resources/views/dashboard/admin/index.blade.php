@@ -39,14 +39,14 @@
       </div>
     </div>
 
-    <div class="bg-white rounded-lg shadow p-6">
+    <!-- <div class="bg-white rounded-lg shadow p-6">
       <h2 class="text-lg font-semibold mb-2">Audit Log</h2>
       <p class="text-sm text-gray-600">Filter berdasarkan actor, aksi, resource, status; lihat detail dan ekspor.</p>
       <div class="mt-3 flex gap-2">
         <a href="{{ url('/admin/audit') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Lihat Audit Logs</a>
         <a href="{{ url('/admin/audit/export') }}" class="inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-700 rounded hover:bg-emerald-200">Export CSV</a>
       </div>
-    </div>
+    </div> -->
   </div>
 </div>
 @endsection
