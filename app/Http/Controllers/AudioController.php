@@ -6,6 +6,8 @@ use App\Models\AudioFile;
 use App\Services\AudioStreamingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AudioController extends Controller
 {
@@ -26,9 +28,9 @@ class AudioController extends Controller
      *
      * @param AudioFile $audioFile
      * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     * @return Response|StreamedResponse
      */
-    public function stream(AudioFile $audioFile, Request $request)
+    public function stream(AudioFile $audioFile, Request $request): Response|StreamedResponse
     {
         return $this->audioStreamingService->streamAudio($audioFile, $request);
     }

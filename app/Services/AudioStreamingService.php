@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\AudioFile;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -28,9 +29,9 @@ class AudioStreamingService
      *
      * @param AudioFile $audioFile
      * @param Request $request
-     * @return StreamedResponse
+     * @return Response|StreamedResponse
      */
-    public function streamAudio(AudioFile $audioFile, Request $request): StreamedResponse
+    public function streamAudio(AudioFile $audioFile, Request $request): Response|StreamedResponse
     {
         $path = Storage::disk('local')->path($audioFile->file_path);
         

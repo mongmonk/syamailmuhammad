@@ -52,11 +52,7 @@
                         @if(!empty($hadith->footnotes))
                             <hr class="my-6 border-gray-300" />
                             <div class="footnotes text-xs text-gray-700">
-                                <ol class="list-decimal pl-5 space-y-1">
-                                    @foreach($hadith->footnotes as $fn)
-                                        <li value="{{ $fn['index'] }}">{{ $fn['content'] }}</li>
-                                    @endforeach
-                                </ol>
+                                {!! nl2br($hadith->footnotes) !!}
                             </div>
                         @endif
                     </div>

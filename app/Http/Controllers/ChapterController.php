@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Chapter;
 use App\Services\CacheService;
 use Illuminate\Http\Request;
-use App\Support\FootnoteParser;
 
 class ChapterController extends Controller
 {
@@ -41,27 +40,11 @@ class ChapterController extends Controller
             abort(404);
         }
 
-        /** @var \App\Support\FootnoteParser $parser */
-        $parser = app(FootnoteParser::class);
-
         $chapterModel = $chapterWithHadiths['chapter'];
         $hadiths = $chapterWithHadiths['hadiths'];
 
-        // Proses footnotes untuk setiap hadits pada bab (gunakan kolom footnotes)
-        // Tambahkan fallback: jika tidak ada marker, jadikan seluruh teks footnotes sebagai satu item.
-        $hadiths = $hadiths->map(function ($h) use ($parser) {
-            $raw = $h->footnotes ?? '';
-            $parsed = $parser->process($raw);
-            $h->footnotes = $parsed['footnotes'];
-
-            if (empty($h->footnotes) && !empty(trim((string) $raw))) {
-                $h->footnotes = [
-                    ['index' => 1, 'content' => trim(preg_replace('/\s+/', ' ', (string) $raw))],
-                ];
-            }
-
-            return $h;
-        });
+        // Footnotes langsung digunakan tanpa parsing (seperti di HadithController)
+        // Akan ditampilkan dengan nl2br di view
 
         // Jika JSON diminta, sertakan footnotes pada payload
         if ($request->expectsJson()) {
@@ -78,7 +61,7 @@ class ChapterController extends Controller
                         'hadith_number' => $h->hadith_number,
                         'arabic_text' => $h->arabic_text,
                         'translation' => $h->translation,
-                        'footnotes' => $h->footnotes ?? [],
+                        'footnotes' => $h->footnotes ?? null,
                     ];
                 })->values(),
             ]);
