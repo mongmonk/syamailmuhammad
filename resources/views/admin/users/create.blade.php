@@ -76,7 +76,6 @@
           <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
           <select id="status" name="status"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-emerald-600 focus:border-emerald-600">
-            <option value="">Default (pending)</option>
             <option value="pending" @selected(old('status')==='pending')>pending</option>
             <option value="active" @selected(old('status')==='active')>active</option>
             <option value="banned" @selected(old('status')==='banned')>banned</option>
@@ -86,7 +85,6 @@
           <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role</label>
           <select id="role" name="role"
                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-emerald-600 focus:border-emerald-600">
-            <option value="">Default (user)</option>
             <option value="user" @selected(old('role')==='user')>user</option>
             <option value="admin" @selected(old('role')==='admin')>admin</option>
           </select>
