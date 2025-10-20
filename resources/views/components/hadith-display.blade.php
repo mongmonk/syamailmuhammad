@@ -37,42 +37,10 @@
         </div>
         @endif
 
-        @php
-            $fnRaw = $hadith->footnotes ?? null;
-            $footnotesList = [];
-
-            if (is_array($fnRaw)) {
-                foreach ($fnRaw as $i => $item) {
-                    if (is_array($item)) {
-                        $index = $item['index'] ?? ($i + 1);
-                        $content = $item['content'] ?? (is_string($item[1] ?? ($item[0] ?? '')) ? ($item[1] ?? $item[0]) : '');
-                        $content = is_string($content) ? trim($content) : '';
-                        if ($content !== '') {
-                            $footnotesList[] = ['index' => $index, 'content' => $content];
-                        }
-                    } elseif (is_string($item)) {
-                        $content = trim($item);
-                        if ($content !== '') {
-                            $footnotesList[] = ['index' => ($i + 1), 'content' => $content];
-                        }
-                    }
-                }
-            } elseif (is_string($fnRaw)) {
-                $content = trim($fnRaw);
-                if ($content !== '') {
-                    $footnotesList[] = ['index' => 1, 'content' => $content];
-                }
-            }
-        @endphp
-
-        @if(count($footnotesList) > 0)
+        @if(!empty($hadith->footnotes))
             <hr class="my-6 border-gray-300" />
             <div class="footnotes text-xs text-gray-700">
-                <ol class="list-decimal pl-5 space-y-1">
-                    @foreach($footnotesList as $fn)
-                        <li value="{{ $fn['index'] }}">{{ $fn['content'] }}</li>
-                    @endforeach
-                </ol>
+                {!! nl2br($hadith->footnotes) !!}
             </div>
         @endif
          
