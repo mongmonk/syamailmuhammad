@@ -35,7 +35,7 @@
                 @foreach($hadiths as $hadith)
                 <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow duration-300">
                     <div class="flex justify-between items-start mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900">
+                        <h3 class="text-lg font-semibold text-emerald-900">
                             Hadits {{ $hadith->hadith_number }}
                         </h3>
                     </div>

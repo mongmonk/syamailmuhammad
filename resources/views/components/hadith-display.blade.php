@@ -15,14 +15,19 @@
         
         <!-- Arabic Text -->
         <div class="mb-8 text-right" dir="rtl">
-            <h3 class="arabic-heading text-gray-800 mb-4">نص الحديث</h3>
-            <p class="arabic-text text-gray-700" lang="ar" dir="rtl">{{ $hadith->arabic_text }}</p>
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="arabic-heading text-gray-800 mb-4">نص الحديث</h3>
+                <h3 class="text-lg font-semibold text-emerald-900">
+                    Hadits {{ $hadith->hadith_number }}
+                </h3>
+            </div>            
+            <p class="arabic-text text-gray-700" lang="ar" dir="rtl">{!! nl2br($hadith->arabic_text) !!}</p>
         </div>
         
         <!-- Translation -->
         <div class="mb-8">
             <h3 class="text-lg font-medium text-gray-800 mb-4">Terjemahan</h3>
-            <p class="translation-text text-gray-700">{{ $hadith->translation }}</p>
+            <p class="translation-text text-gray-700">{!! nl2br($hadith->translation) !!}</p>
         </div>
         
         {{-- Bagian Tafsir dihapus dari tampilan. Footnotes akan ditampilkan di bagian bawah dengan garis atas dan teks kecil. --}}
