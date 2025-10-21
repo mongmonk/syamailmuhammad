@@ -43,11 +43,11 @@
                     <div class="mb-4">
                         <!-- Arabic Text -->
                         <div class="mb-4 text-right" dir="rtl">
-                            <p class="arabic-text text-gray-700" lang="ar" dir="rtl">{{ $hadith->arabic_text }}</p>
+                            <p class="arabic-text text-gray-700" lang="ar" dir="rtl">{!! nl2br($hadith->arabic_text) !!}</p>
                         </div>
                         
                         <!-- Translation -->
-                        <p class="translation-text text-gray-700 mb-4">{{ $hadith->translation }}</p>
+                        <p class="translation-text text-gray-700 mb-4">{!! nl2br($hadith->translation) !!}</p>
                         
                         @if(!empty($hadith->footnotes))
                             <hr class="my-6 border-gray-300" />
