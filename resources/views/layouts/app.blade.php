@@ -79,7 +79,7 @@
                         <a href="{{ url('/') }}" class="text-sm font-medium transition-colors {{ request()->is('/') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Beranda</a>
                         <a href="{{ route('chapters.index') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('chapters.*') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Bab</a>
                         <a href="{{ route('search.form') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('search.form') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Cari</a>
-                        <a href="{{ route('posts.index') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('posts.*') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Artikel</a>
+                        <a href="{{ route('posts.index') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('posts.*') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Galeri</a>
                         @if (Route::has('login'))
                             @auth
                                 <a href="{{ route('dashboard') }}" class="text-sm font-medium transition-colors {{ request()->routeIs('dashboard') ? 'text-emerald-700' : 'text-gray-700 hover:text-emerald-700' }}">Dashboard</a>
@@ -114,7 +114,7 @@
                     <a href="{{ url('/') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->is('/') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Beranda</a>
                     <a href="{{ route('chapters.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('chapters.*') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Bab</a>
                     <a href="{{ route('search.form') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('search.form') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Cari</a>
-                    <a href="{{ route('posts.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('posts.*') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Artikel</a>
+                    <a href="{{ route('posts.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('posts.*') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Galeri</a>
                     @if (Route::has('login'))
                         @auth
                             <a href="{{ route('dashboard') }}" class="block px-3 py-2 rounded-md text-sm font-medium transition-colors {{ request()->routeIs('dashboard') ? 'bg-gray-100 text-emerald-700' : 'text-gray-700 hover:bg-gray-100 hover:text-emerald-700' }}">Dashboard</a>
@@ -170,7 +170,7 @@
                         <div class="font-semibold text-gray-900">Navigasi</div>
                         <a href="{{ url('/') }}" class="block text-gray-600 hover:text-emerald-700">Beranda</a>
                         <a href="{{ route('chapters.index') }}" class="block text-gray-600 hover:text-emerald-700">Bab</a>
-                        <a href="{{ route('posts.index') }}" class="block text-gray-600 hover:text-emerald-700">Artikel</a>
+                        <a href="{{ route('posts.index') }}" class="block text-gray-600 hover:text-emerald-700">Galeri</a>
                         <a href="#demo" class="block text-gray-600 hover:text-emerald-700">Demo</a>
                     </nav>
                     <nav class="space-y-2" aria-label="Kebijakan">

@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\PostPublicController;
+use App\Http\Controllers\GalleryApiController;
 
  // API Auth (JWT Bearer)
 Route::post('/auth/login', [AuthController::class, 'loginApi'])
@@ -43,8 +44,12 @@ Route::middleware(['security.headers', 'jwt', 'role.admin'])->prefix('posts')->g
     Route::delete('/{post}', [PostController::class, 'destroy']);
 });
 
-// Public Posts endpoints
+// Public endpoints
 Route::middleware(['security.headers', 'cache.headers:short'])->group(function () {
+    // Legacy posts JSON (tetap untuk kompatibilitas)
     Route::get('/posts', [PostPublicController::class, 'index']);
     Route::get('/posts/{slug}', [PostPublicController::class, 'show']);
+
+    // Galeri publik (baru)
+    Route::get('/gallery', [GalleryApiController::class, 'index']);
 });

@@ -3,46 +3,74 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\GalleryItem;
 use Illuminate\Http\Request;
-use App\Models\Post;
 
 class PostsPublicPageController extends Controller
 {
     /**
-     * Daftar post terbit (publik, SSR).
-     * Filter opsional: q (judul).
+     * Halaman galeri publik (SSR).
+     * - Menampilkan item aktif & terbit terbaru
+     * - Pencarian sederhana berdasarkan caption
+     * - Filter berdasarkan tag (opsional)
+     * - Pagination
      */
     public function index(Request $request)
     {
-        $query = Post::query()
-            ->select(['id', 'title', 'slug', 'created_at'])
-            ->published()
+        $query = GalleryItem::query()
+            ->select([
+                'id',
+                'slug',
+                'caption',
+                'alt_text',
+                'variants',
+                'published_at',
+                'created_at',
+            ])
+            ->where('is_active', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->orderByDesc('published_at')
             ->orderByDesc('id');
 
         if ($request->filled('q')) {
-            $q = trim($request->input('q'));
-            $query->where('title', 'ILIKE', '%' . str_replace('%', '\\%', $q) . '%');
+            $q = trim((string) $request->input('q'));
+            $like = '%' . str_replace('%', '\\%', $q) . '%';
+            $query->where('caption', 'like', $like);
         }
 
-        $posts = $query->paginate(12)->appends($request->query());
+        if ($request->filled('tag')) {
+            $tag = trim((string) $request->input('tag'));
+            if ($tag !== '') {
+                $query->whereJsonContains('tags', $tag);
+            }
+        }
 
-        return view('posts.index', compact('posts'));
+        $items = $query->paginate(24)->appends($request->query());
+
+        return view('posts.index', [
+            'items' => $items,
+        ]);
     }
 
     /**
-     * Detail post terbit berdasarkan slug (publik, SSR).
+     * Halaman detail galeri (gambar resolusi lebih tinggi + caption).
      */
     public function show(string $slug)
     {
-        $post = Post::query()
-            ->published()
+        $item = GalleryItem::query()
             ->where('slug', $slug)
+            ->where('is_active', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
             ->first();
 
-        if (! $post) {
-            abort(404, 'Post tidak ditemukan');
+        if (! $item) {
+            abort(404, 'Gambar tidak ditemukan');
         }
 
-        return view('posts.show', compact('post'));
+        return view('posts.show', [
+            'item' => $item,
+        ]);
     }
 }

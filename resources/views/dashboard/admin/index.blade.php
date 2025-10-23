@@ -16,10 +16,10 @@
     </div>
 
     <div class="bg-white rounded-lg shadow p-6">
-      <h2 class="text-lg font-semibold mb-2">Manajemen Posts</h2>
-      <p class="text-sm text-gray-600">Buat, edit, hapus post; pencarian judul dan toggle publish.</p>
+      <h2 class="text-lg font-semibold mb-2">Manajemen Galeri</h2>
+      <p class="text-sm text-gray-600">Buat, edit, hapus foto; pencarian judul dan toggle publish.</p>
       <div class="mt-3">
-        <a href="{{ url('/admin/posts') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Kelola Posts</a>
+        <a href="{{ url('/admin/posts') }}" class="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700">Kelola Galeri</a>
       </div>
     </div>
 

@@ -19,6 +19,11 @@ use App\Http\Controllers\Auth\NewPasswordController;
 Route::get('/', function () {
     return view('welcome');
 })->name('home')->middleware(['security.headers', 'cache.headers:short']);
+// Proxy akses publik untuk /storage/* agar varian gambar galeri dapat dilayani meski symlink/permission bermasalah
+Route::get('/storage/{path}', [\App\Http\Controllers\StorageProxyController::class, 'serve'])
+    ->where('path', '.*')
+    ->name('storage.serve')
+    ->middleware(['security.headers', 'cache.headers:long']);
 
 // Chapter routes
 Route::get('/chapters', [ChapterController::class, 'index'])->name('chapters.index')->middleware(['security.headers', 'cache.headers:long']);
@@ -67,6 +72,8 @@ Route::middleware(['security.headers', 'auth', 'ensure.active', 'role.admin'])->
     })->name('admin.index');
 
     // Admin - Users (SSR)
+// Route model binding: gunakan GalleryItem untuk parameter {post} di admin
+Route::model('post', \App\Models\GalleryItem::class);
     Route::get('/users', [\App\Http\Controllers\Admin\UsersPageController::class, 'index'])->name('admin.users.index');
     Route::get('/users/create', [\App\Http\Controllers\Admin\UsersPageController::class, 'create'])->name('admin.users.create');
     Route::post('/users', [\App\Http\Controllers\Admin\UsersPageController::class, 'store'])->name('admin.users.store');
