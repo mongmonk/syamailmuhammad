@@ -16,7 +16,7 @@
         <!-- Arabic Text -->
         <div class="mb-8 text-right" dir="rtl">
             <div class="flex justify-between items-start mb-4">
-                <h3 class="arabic-heading text-gray-800 mb-4">نص الحديث</h3>
+                <h3 class="arabic-heading text-gray-800 mb-4"></h3>
                 <h3 class="text-lg font-semibold text-emerald-900">
                     Hadits {{ $hadith->hadith_number }}
                 </h3>

@@ -1,49 +1,44 @@
-<div class="bg-gray-50 p-3 sm:p-4 rounded-lg mb-6">
-    <div class="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 sm:gap-4 items-center">
+<div class="bg-gray-50 p-3 sm:p-4 rounded-lg mb-6">        
+    <div class="flex flex-wrap w-full justify-between items-center">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            
-            <div class="flex flex-row items-center justify-between gap-2">
-                <label for="arabic-font-size" class="text-sm font-medium text-gray-700 whitespace-nowrap">Ukuran Font Arab:</label>
-                <div class="flex items-center space-x-2">
-                    <button id="arabic-font-decrease" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                        </svg>
-                    </button>
-                    <span id="arabic-font-size-value" class="text-sm font-medium text-gray-700 w-8 text-center">24</span>
-                    <button id="arabic-font-increase" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            
-            <div class="flex flex-row items-center justify-between gap-2">
-                <label for="translation-font-size" class="text-sm font-medium text-gray-700 whitespace-nowrap">Ukuran Font Terjemahan:</label>
-                <div class="flex items-center space-x-2">
-                    <button id="translation-font-decrease" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
-                        </svg>
-                    </button>
-                    <span id="translation-font-size-value" class="text-sm font-medium text-gray-700 w-8 text-center">18</span>
-                    <button id="translation-font-increase" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                    </button>
-                </div>
+        <div class="flex flex-col flex-row items-center gap-2">
+            <label for="arabic-font-size" class="text-sm font-medium text-gray-700 whitespace-nowrap">Font Arab:</label>
+            <div class="flex items-center space-x-2">
+                <button id="arabic-font-decrease" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                    </svg>
+                </button>
+                <span id="arabic-font-size-value" class="text-sm font-medium text-gray-700 w-8 text-center">24</span>
+                <button id="arabic-font-increase" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </button>
             </div>
         </div>
         
-        <div class="flex justify-end mt-2 sm:mt-0">
-            <button id="reset-font-sizes" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm whitespace-nowrap">
-                Reset Ukuran
-            </button>
+        <div class="flex flex-col flex-row items-center gap-2">
+            <label for="translation-font-size" class="text-sm font-medium text-gray-700 whitespace-nowrap">Font Terjemahan:</label>
+            <div class="flex items-center space-x-2">
+                <button id="translation-font-decrease" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path>
+                    </svg>
+                </button>
+                <span id="translation-font-size-value" class="text-sm font-medium text-gray-700 w-8 text-center">20</span>
+                <button id="translation-font-increase" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </button>
+            </div>
         </div>
-
+    </div>   
+    <div class="w-full md:w-auto flex justify-end mt-2">
+        <button id="reset-font-sizes" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm whitespace-nowrap">
+            Reset Ukuran
+        </button>
     </div>
 </div>
 
