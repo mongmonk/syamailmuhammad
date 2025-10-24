@@ -47,7 +47,7 @@
             <h2 class="text-sm font-semibold text-gray-800">Form Isian Hadits</h2>
           </div>
 
-          <form method="POST" action="{{ route('admin.hadiths.store') }}" class="px-6 py-6 space-y-6" enctype="multipart/form-data">
+          <form method="POST" action="{{ route('admin.hadiths.store') }}" class="px-6 py-6 space-y-6" enctype="multipart/form-data" novalidate>
             @csrf
 
             <!-- Bab -->

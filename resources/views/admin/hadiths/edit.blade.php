@@ -62,7 +62,7 @@
             </div>
           </div>
 
-          <form method="POST" action="{{ route('admin.hadiths.update', $hadith->id) }}" class="px-6 py-6 space-y-6" enctype="multipart/form-data">
+          <form method="POST" action="{{ route('admin.hadiths.update', $hadith->id) }}" class="px-6 py-6 space-y-6" enctype="multipart/form-data" novalidate>
             @csrf
             @method('PATCH')
 
