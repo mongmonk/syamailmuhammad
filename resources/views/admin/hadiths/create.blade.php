@@ -309,33 +309,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  // Editor Arab RTL
-  var arabEl = document.getElementById('arabic_text');
-  if (arabEl) {
-    if (useCK()) {
-      ClassicEditor.create(arabEl, {
-        language: { ui: 'id', content: 'ar' },
-        toolbar: {
-          items: [
-            'undo','redo','|','bold','italic','underline','link','alignment','|','bulletedList','numberedList','insertTable','removeFormat','codeBlock'
-          ]
-        },
-        removePlugins: [
-          'CKBox','CKFinder','EasyImage','CloudServices','RealTimeCollaborativeComments','RealTimeCollaborativeTrackChanges','RealTimeCollaborativeRevisionHistory','PresenceList','Comments','TrackChanges','RevisionHistory','WProofreader','MathType','SlashCommand','Template','DocumentOutline','FormatPainter','TableOfContents','ExportPdf','ExportWord'
-        ]
-      }).then(function(editor){
-        try {
-          editor.ui.view.editable.element.classList.add('rtl');
-          editor.editing.view.change(function(writer){
-            writer.setAttribute('dir','rtl', editor.editing.view.document.getRoot());
-          });
-        } catch (e) { console.warn('Set RTL gagal:', e); }
-        attachSubmitSync(arabEl, editor);
-      }).catch(function(e){ console.warn('CKEditor init arabic failed:', e); });
-    } else {
-      initFallbackSimpleEditor(arabEl, { rtl: true });
-    }
-  }
 
   // Editor LTR untuk translation dan footnotes
   document.querySelectorAll('#translation, #footnotes').forEach(function(el){
