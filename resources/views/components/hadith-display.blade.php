@@ -21,7 +21,7 @@
                     Hadits {{ $hadith->hadith_number }}
                 </h3>
             </div>            
-            <p class="arabic-text text-gray-700" lang="ar" dir="rtl">{!! nl2br($hadith->arabic_text) !!}</p>
+            <p class="arabic-text text-gray-700" lang="ar" dir="rtl">{{ $hadith->arabic_text }}</p>
         </div>
         
         <!-- Translation -->

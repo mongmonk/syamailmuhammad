@@ -228,31 +228,191 @@
 @endsection
 
 @push('scripts')
+<style>
+/* Styling konten editor CKEditor */
+.ck-content.rtl { font-family: 'Amiri Quran','Noto Naskh Arabic','KFGQPC Uthman Taha Naskh', serif; font-size: 18px; line-height: 2; text-align: right; }
+.ck-content.ltr { font-family: 'Mulish', system-ui, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans'; font-size: 16px; line-height: 1.6; }
+
+/* Pastikan list (angka/bullet) tampil di CKEditor */
+.ck-content.rtl ol { list-style: decimal; list-style-position: outside; padding-inline-start: 1.25rem; margin: .5rem 0; }
+.ck-content.rtl ul { list-style: disc; list-style-position: outside; padding-inline-start: 1.25rem; margin: .5rem 0; }
+.ck-content.ltr ol { list-style: decimal; list-style-position: outside; padding-inline-start: 1.25rem; margin: .5rem 0; }
+.ck-content.ltr ul { list-style: disc; list-style-position: outside; padding-inline-start: 1.25rem; margin: .5rem 0; }
+
+/* Fallback SimpleEditor (non-CDN, lokal) */
+.simple-editor { border: 1px solid #d1d5db; border-radius: 0.375rem; padding: 0.5rem; min-height: 140px; background: #fff; }
+.simple-editor.rtl { font-family: 'Amiri Quran','Noto Naskh Arabic','KFGQPC Uthman Taha Naskh', serif; font-size: 18px; line-height: 2; text-align: right; }
+.simple-editor.ltr { font-family: 'Mulish', system-ui, Segoe UI, Roboto, 'Helvetica Neue', Arial, 'Noto Sans'; font-size: 16px; line-height: 1.6; text-align: left; }
+.simple-editor-toolbar { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .5rem; }
+.simple-editor-toolbar button { border: 1px solid #d1d5db; padding: .25rem .5rem; border-radius: .375rem; background: #f9fafb; font-size: .875rem; }
+
+/* Pastikan list (angka/bullet) tampil di SimpleEditor */
+.simple-editor ol { list-style: decimal; list-style-position: outside; padding-inline-start: 1.25rem; margin: .5rem 0; }
+.simple-editor ul { list-style: disc; list-style-position: outside; padding-inline-start: 1.25rem; margin: .5rem 0; }
+
+/* Fallback penyesuaian RTL untuk list */
+.simple-editor.rtl ol,
+.simple-editor.rtl ul {
+  padding-inline-start: 0;
+  padding-inline-end: 1.25rem; /* modern */
+  padding-right: 1.25rem;      /* fallback untuk browser lama */
+}
+</style>
+
+<!-- CKEditor 5 Classic build (global: ClassicEditor). Bila CSP memblokir, fallback SimpleEditor akan aktif -->
+<script src="https://cdn.ckeditor.com/ckeditor5/44.2.0/classic/ckeditor.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-// Cache busting untuk audio saat halaman edit dibuka
-(function bustAudioCache() {
+// Inisialisasi editor dengan fallback lokal bila CDN diblokir
+document.addEventListener('DOMContentLoaded', function () {
+  function useCK() { return typeof ClassicEditor !== 'undefined'; }
+
+  // Sinkronisasi nilai textarea saat submit (CKEditor 5 tidak auto sinkron)
+  function attachSubmitSync(el, editor) {
     try {
-        // Force reload audio elements to prevent caching
-        const audioElements = document.querySelectorAll('audio');
-        audioElements.forEach(function(audioEl) {
-            const currentSrc = audioEl.src;
-            if (currentSrc && currentSrc.includes('/audio/')) {
-                // Add timestamp to force reload
-                const separator = currentSrc.includes('?') ? '&' : '?';
-                const newSrc = currentSrc + separator + '_reload=' + new Date().getTime();
-                console.log('Busting audio cache on edit page:', {
-                    oldSrc: currentSrc,
-                    newSrc: newSrc
-                });
-                audioEl.src = newSrc;
-                audioEl.load(); // Force reload
-            }
-        });
+      var form = el && el.form;
+      if (form) {
+        form.addEventListener('submit', function () {
+          editor.updateSourceElement();
+        }, { once: false });
+      }
     } catch (e) {
-        console.warn('Audio cache busting failed:', e);
+      console.warn('Gagal attach submit sync:', e);
     }
-})();
+  }
+
+  // Fallback: SimpleEditor berbasis contenteditable (tanpa CDN)
+  function initFallbackSimpleEditor(textarea, opts) {
+    var isRtl = !!(opts && opts.rtl);
+    try {
+      var wrapper = document.createElement('div');
+      var toolbar = document.createElement('div');
+      toolbar.className = 'simple-editor-toolbar';
+      var editorDiv = document.createElement('div');
+      editorDiv.className = 'simple-editor ' + (isRtl ? 'rtl' : 'ltr');
+      editorDiv.setAttribute('contenteditable', 'true');
+      editorDiv.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
+      editorDiv.innerHTML = textarea.value || '';
+
+      function makeBtn(label, handler) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.addEventListener('click', function (e) {
+          e.preventDefault();
+          try { handler(); } catch (err) { console.warn('Toolbar error:', err); }
+          editorDiv.focus();
+        });
+        return b;
+      }
+
+      toolbar.appendChild(makeBtn('B', function(){ document.execCommand('bold'); }));
+      toolbar.appendChild(makeBtn('I', function(){ document.execCommand('italic'); }));
+      toolbar.appendChild(makeBtn('U', function(){ document.execCommand('underline'); }));
+      // Superscript/Subscript untuk penulisan angka catatan kaki
+      toolbar.appendChild(makeBtn('Sup', function(){ document.execCommand('superscript'); }));
+      toolbar.appendChild(makeBtn('Sub', function(){ document.execCommand('subscript'); }));
+      // List bullet dan numbering
+      toolbar.appendChild(makeBtn('•', function(){ document.execCommand('insertUnorderedList'); }));
+      toolbar.appendChild(makeBtn('1.', function(){ document.execCommand('insertOrderedList'); }));
+      toolbar.appendChild(makeBtn('Link', function(){
+        var url = prompt('Masukkan URL:', 'https://');
+        if (url) document.execCommand('createLink', false, url);
+      }));
+      toolbar.appendChild(makeBtn('Clear', function(){ document.execCommand('removeFormat'); }));
+      toolbar.appendChild(makeBtn('⯈', function(){ document.execCommand('justifyLeft'); }));
+      toolbar.appendChild(makeBtn('⯀', function(){ document.execCommand('justifyCenter'); }));
+      toolbar.appendChild(makeBtn('⯇', function(){ document.execCommand('justifyRight'); }));
+
+      var container = document.createElement('div');
+      container.appendChild(toolbar);
+      container.appendChild(editorDiv);
+
+      textarea.style.display = 'none';
+      textarea.parentNode.insertBefore(container, textarea);
+
+      var form = textarea.form;
+      if (form) {
+        form.addEventListener('submit', function(){
+          // Kirim sebagai HTML agar format (sup/sub, list, link) tersimpan
+          textarea.value = editorDiv.innerHTML;
+        });
+      }
+    } catch (e) {
+      console.warn('Init fallback SimpleEditor gagal:', e);
+    }
+  }
+
+  // Editor Arab RTL
+  var arabEl = document.getElementById('arabic_text');
+  if (arabEl) {
+    if (useCK()) {
+      ClassicEditor.create(arabEl, {
+        language: { ui: 'id', content: 'ar' },
+        toolbar: {
+          items: [
+            'undo','redo','|','bold','italic','underline','link','alignment','|','bulletedList','numberedList','insertTable','removeFormat','codeBlock'
+          ]
+        },
+        removePlugins: [
+          'CKBox','CKFinder','EasyImage','CloudServices','RealTimeCollaborativeComments','RealTimeCollaborativeTrackChanges','RealTimeCollaborativeRevisionHistory','PresenceList','Comments','TrackChanges','RevisionHistory','WProofreader','MathType','SlashCommand','Template','DocumentOutline','FormatPainter','TableOfContents','ExportPdf','ExportWord'
+        ]
+      }).then(function(editor){
+        try {
+          editor.ui.view.editable.element.classList.add('rtl');
+          editor.editing.view.change(function(writer){
+            writer.setAttribute('dir','rtl', editor.editing.view.document.getRoot());
+          });
+        } catch (e) { console.warn('Set RTL gagal:', e); }
+        attachSubmitSync(arabEl, editor);
+      }).catch(function(e){ console.warn('CKEditor init arabic failed:', e); });
+    } else {
+      // Fallback lokal jika CKEditor diblokir oleh CSP
+      initFallbackSimpleEditor(arabEl, { rtl: true });
+    }
+  }
+
+  // Editor LTR untuk translation dan footnotes
+  document.querySelectorAll('#translation, #footnotes').forEach(function(el){
+    if (useCK()) {
+      ClassicEditor.create(el, {
+        language: { ui: 'id', content: 'id' },
+        toolbar: {
+          items: [
+            'undo','redo','|','bold','italic','underline','link','alignment','|','bulletedList','numberedList','insertTable','removeFormat','codeBlock'
+          ]
+        },
+        removePlugins: [
+          'CKBox','CKFinder','EasyImage','CloudServices','RealTimeCollaborativeComments','RealTimeCollaborativeTrackChanges','RealTimeCollaborativeRevisionHistory','PresenceList','Comments','TrackChanges','RevisionHistory','WProofreader','MathType','SlashCommand','Template','DocumentOutline','FormatPainter','TableOfContents','ExportPdf','ExportWord'
+        ]
+      }).then(function(editor){
+        try { editor.ui.view.editable.element.classList.add('ltr'); } catch (e) {}
+        attachSubmitSync(el, editor);
+      }).catch(function(e){ console.warn('CKEditor init ltr failed:', e); });
+    } else {
+      initFallbackSimpleEditor(el, { rtl: false });
+    }
+  });
+
+  // Cache busting audio (tetap)
+  (function bustAudioCache() {
+    try {
+      var audioElements = document.querySelectorAll('audio');
+      audioElements.forEach(function(audioEl) {
+        var currentSrc = audioEl.src;
+        if (currentSrc && currentSrc.indexOf('/audio/') !== -1) {
+          var separator = currentSrc.indexOf('?') !== -1 ? '&' : '?';
+          var newSrc = currentSrc + separator + '_reload=' + new Date().getTime();
+          console.log('Busting audio cache on edit page:', { oldSrc: currentSrc, newSrc: newSrc });
+          audioEl.src = newSrc;
+          audioEl.load();
+        }
+      });
+    } catch (e) {
+      console.warn('Audio cache busting failed:', e);
+    }
+  })();
 });
 </script>
 @endpush
+
+{{-- Duplikat blok CKEditor dihapus. Satu blok konsolidasi dengan fallback SimpleEditor sudah ditambahkan di atas. --}}
