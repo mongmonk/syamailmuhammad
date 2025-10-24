@@ -97,7 +97,7 @@
                   {{ \Illuminate\Support\Str::limit($h->arabic_text, 60) }}
                 </td>
                 <td class="px-4 py-2 text-sm text-gray-700">
-                  {{ \Illuminate\Support\Str::limit($h->translation, 80) }}
+                  {{ \Illuminate\Support\Str::limit(strip_tags($h->translation, 80)) }}
                 </td>
                 <td class="px-4 py-2 text-sm text-gray-500">{{ optional($h->created_at)->format('Y-m-d') }}</td>
                 <td class="px-4 py-2 text-sm">
