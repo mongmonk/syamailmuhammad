@@ -1,7 +1,7 @@
-<div class="bg-gray-50 p-3 sm:p-4 rounded-lg mb-6">        
-    <div class="flex flex-wrap w-full justify-between items-center">
+<div class="bg-gray-50 p-3 sm:p-4 rounded-lg mb-6">
+    <div class="flex flex-wrap w-full justify-between md:justify-end items-center gap-2">
         
-        <div class="flex flex-col flex-row items-center gap-2">
+        <div class="flex flex-col sm:flex-row items-center gap-2">
             <label for="arabic-font-size" class="text-sm font-medium text-gray-700 whitespace-nowrap">Font Arab:</label>
             <div class="flex items-center space-x-2">
                 <button id="arabic-font-decrease" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
@@ -18,7 +18,7 @@
             </div>
         </div>
         
-        <div class="flex flex-col flex-row items-center gap-2">
+        <div class="flex flex-col sm:flex-row items-center gap-2">
             <label for="translation-font-size" class="text-sm font-medium text-gray-700 whitespace-nowrap">Font Terjemahan:</label>
             <div class="flex items-center space-x-2">
                 <button id="translation-font-decrease" class="px-2 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
@@ -34,8 +34,7 @@
                 </button>
             </div>
         </div>
-    </div>   
-    <div class="w-full md:w-auto flex justify-end mt-2">
+        
         <button id="reset-font-sizes" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm whitespace-nowrap">
             Reset Ukuran
         </button>

@@ -240,7 +240,13 @@ document.addEventListener('DOMContentLoaded', function () {
       var form = el && el.form;
       if (form) {
         form.addEventListener('submit', function () {
+          // DEBUG: Log nilai CKEditor sebelum update
+          console.log('DEBUG CKEditor: Sebelum updateSourceElement - el.value:', el.value);
+          console.log('DEBUG CKEditor: editor.getData():', editor.getData());
+          
           editor.updateSourceElement();
+          
+          console.log('DEBUG CKEditor: Setelah updateSourceElement - el.value:', el.value);
         }, { once: false });
       }
     } catch (e) {
@@ -259,6 +265,11 @@ document.addEventListener('DOMContentLoaded', function () {
       editorDiv.setAttribute('contenteditable', 'true');
       editorDiv.setAttribute('dir', isRtl ? 'rtl' : 'ltr');
       editorDiv.innerHTML = textarea.value || '';
+      
+      // DEBUG: Log nilai awal saat inisialisasi
+      console.log('DEBUG SimpleEditor: Inisialisasi untuk', textarea.name);
+      console.log('DEBUG SimpleEditor: textarea.value awal:', textarea.value);
+      console.log('DEBUG SimpleEditor: editorDiv.innerHTML awal:', editorDiv.innerHTML);
 
       function makeBtn(label, handler) {
         var b = document.createElement('button');
@@ -299,9 +310,23 @@ document.addEventListener('DOMContentLoaded', function () {
 
       var form = textarea.form;
       if (form) {
-        form.addEventListener('submit', function(){
+        form.addEventListener('submit', function(e){
+          // DEBUG: Log nilai sebelum dan sesudah konversi
+          console.log('DEBUG: Sebelum konversi - textarea.value:', JSON.stringify(textarea.value));
+          console.log('DEBUG: Sebelum konversi - editorDiv.innerHTML:', JSON.stringify(editorDiv.innerHTML));
+          console.log('DEBUG: editorDiv.textContent:', JSON.stringify(editorDiv.textContent));
+          
           // Kirim sebagai HTML agar format (sup/sub, list, link) tersimpan
           textarea.value = editorDiv.innerHTML;
+          
+          console.log('DEBUG: Setelah konversi - textarea.value:', JSON.stringify(textarea.value));
+          
+          // DEBUG: Log semua form data yang akan dikirim
+          var formData = new FormData(form);
+          console.log('DEBUG: Form data yang akan dikirim:');
+          for (var pair of formData.entries()) {
+            console.log('  ', pair[0], ':', JSON.stringify(pair[1]));
+          }
         });
       }
     } catch (e) {

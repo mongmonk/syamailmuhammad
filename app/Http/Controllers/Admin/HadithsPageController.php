@@ -133,6 +133,19 @@ class HadithsPageController extends Controller
     public function store(StoreHadithRequest $request)
     {
         $data = $request->validated();
+        
+        // DEBUG: Log data yang diterima sebelum disimpan
+        Log::info('DEBUG Hadith Store - Raw request data', [
+            'translation_raw' => $request->input('translation'),
+            'footnotes_raw' => $request->input('footnotes'),
+            'arabic_text_raw' => $request->input('arabic_text'),
+        ]);
+        
+        Log::info('DEBUG Hadith Store - Validated data', [
+            'translation' => $data['translation'] ?? 'NOT_SET',
+            'footnotes' => $data['footnotes'] ?? 'NOT_SET',
+            'arabic_text' => $data['arabic_text'] ?? 'NOT_SET',
+        ]);
 
         $hadith = new Hadith();
         $hadith->chapter_id = $data['chapter_id'];
@@ -227,6 +240,21 @@ class HadithsPageController extends Controller
     public function update(UpdateHadithRequest $request, Hadith $hadith)
     {
         $data = $request->validated();
+        
+        // DEBUG: Log data yang diterima sebelum disimpan
+        Log::info('DEBUG Hadith Update - Raw request data', [
+            'hadith_id' => $hadith->id,
+            'translation_raw' => $request->input('translation'),
+            'footnotes_raw' => $request->input('footnotes'),
+            'arabic_text_raw' => $request->input('arabic_text'),
+        ]);
+        
+        Log::info('DEBUG Hadith Update - Validated data', [
+            'hadith_id' => $hadith->id,
+            'translation' => $data['translation'] ?? 'NOT_SET',
+            'footnotes' => $data['footnotes'] ?? 'NOT_SET',
+            'arabic_text' => $data['arabic_text'] ?? 'NOT_SET',
+        ]);
 
         $changed = [];
 
