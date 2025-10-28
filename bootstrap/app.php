@@ -25,6 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
             // JWT API auth
             'jwt' => \App\Http\Middleware\JwtAuthenticate::class,
         ]);
+
+        // Apply security headers globally but allow PWA functionality
+        $middleware->web(append: [
+            \App\Http\Middleware\SecurityHeaders::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Standardisasi respons 401 untuk request JSON/non-JSON yang tidak terautentikasi

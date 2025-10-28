@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 class SecurityHeaders
 {
     /**
-     * Tambah header keamanan standar OWASP untuk semua respons HTTP.
+     * Tambah header keamanan standar untuk semua respons HTTP.
      */
     public function handle(Request $request, Closure $next): SymfonyResponse
     {
@@ -19,44 +19,14 @@ class SecurityHeaders
             return $response;
         }
 
-        // Kebijakan default yang aman, dapat dioverride via ENV.
-        // Pada lingkungan lokal/DEBUG, longgarkan CSP agar sumber eksternal (fonts & CDN) dapat dimuat.
-        $isLocal = app()->environment('local') || (bool) env('APP_DEBUG', false);
-
-        if ($isLocal) {
-            // Dev policy: izinkan fonts dan Tailwind CDN yang digunakan di layout
-            $csp = "default-src 'self'; img-src 'self' data:; media-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.tiny.cloud https://cdn.ckeditor.com; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.tiny.cloud https://cdn.ckeditor.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com https://cdn.tiny.cloud https://cdn.ckeditor.com; style-src-elem 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com https://cdn.tiny.cloud https://cdn.ckeditor.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.bunny.net; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://fonts.bunny.net https://cdn.tiny.cloud https://cdn.ckeditor.com; worker-src 'self' blob:";
-        } else {
-            // Production: gunakan kebijakan dari ENV atau fallback ketat
-            $csp = env('CSP_POLICY', "default-src 'self'; img-src 'self' data:; media-src 'self' blob: data:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.tiny.cloud https://cdn.ckeditor.com; script-src-elem 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.tiny.cloud https://cdn.ckeditor.com; style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com https://cdn.tiny.cloud https://cdn.ckeditor.com; style-src-elem 'self' 'unsafe-inline' https://fonts.bunny.net https://fonts.googleapis.com https://cdn.tiny.cloud https://cdn.ckeditor.com; font-src 'self' data: https://fonts.gstatic.com https://fonts.bunny.net; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://fonts.bunny.net https://cdn.tiny.cloud https://cdn.ckeditor.com; worker-src 'self' blob:");
-        }
-
-        $xFrame = env('X_FRAME_OPTIONS', 'SAMEORIGIN');
-        $referrer = env('REFERRER_POLICY', 'strict-origin-when-cross-origin');
-        $permissions = env('PERMISSIONS_POLICY', 'camera=(), microphone=(), geolocation=()');
-        $coep = env('COEP', null); // opsional, hati-hati dapat memblok third-party
-        $corp = env('CORP', 'same-origin');
-        $coop = env('COOP', 'same-origin');
-
-        // Header utama keamanan
-        $response->headers->set('Content-Security-Policy', $csp);
-        $response->headers->set('X-Frame-Options', $xFrame);
+        // Header keamanan standar yang sederhana
+        $response->headers->set('X-Frame-Options', 'SAMEORIGIN');
         $response->headers->set('X-Content-Type-Options', 'nosniff');
-        $response->headers->set('Referrer-Policy', $referrer);
-        $response->headers->set('Permissions-Policy', $permissions);
-        $response->headers->set('Cross-Origin-Resource-Policy', $corp);
-        $response->headers->set('Cross-Origin-Opener-Policy', $coop);
+        $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
-        if ($coep) {
-            $response->headers->set('Cross-Origin-Embedder-Policy', $coep);
-        }
-
-        // HSTS hanya aktif saat HTTPS atau FORCE_HTTPS diaktifkan
-        if ($request->isSecure() || env('FORCE_HTTPS', false)) {
-            $hstsMaxAge = (int) env('HSTS_MAX_AGE', 31536000); // 1 tahun
-            $hstsIncludeSubdomains = env('HSTS_INCLUDE_SUBDOMAINS', true) ? '; includeSubDomains' : '';
-            $hstsPreload = env('HSTS_PRELOAD', false) ? '; preload' : '';
-            $response->headers->set('Strict-Transport-Security', "max-age={$hstsMaxAge}{$hstsIncludeSubdomains}{$hstsPreload}");
+        // HSTS hanya untuk HTTPS
+        if ($request->isSecure()) {
+            $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }
 
         return $response;

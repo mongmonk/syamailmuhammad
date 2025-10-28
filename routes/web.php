@@ -141,6 +141,11 @@ Route::get('/search', [SearchController::class, 'search'])->name('search')->midd
 Route::get('/search/history', [SearchController::class, 'history'])->name('search.history')->middleware(['security.headers', 'cache.headers:short', 'throttle:search']);
 Route::delete('/search/history', [SearchController::class, 'clearHistory'])->name('search.history.clear')->middleware(['security.headers', 'auth']);
 
+// PWA Offline route
+Route::get('/offline', function () {
+    return view('offline');
+})->name('offline')->middleware(['security.headers']);
+
 // Public SSR - Posts
 Route::get('/posts', [\App\Http\Controllers\PostsPublicPageController::class, 'index'])->name('posts.index')->middleware(['security.headers', 'cache.headers:short']);
 Route::get('/posts/{slug}', [\App\Http\Controllers\PostsPublicPageController::class, 'show'])->name('posts.show')->middleware(['security.headers', 'cache.headers:short']);

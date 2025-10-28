@@ -9,6 +9,21 @@
         <link rel="canonical" href="{{ url()->current() }}">
         <meta name="theme-color" content="#4f46e5">
         
+        <!-- PWA Meta Tags -->
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="default">
+        <meta name="apple-mobile-web-app-title" content="Syamail">
+        <meta name="application-name" content="Syamail">
+        <meta name="msapplication-TileColor" content="#4f46e5">
+        
+        <!-- PWA Manifest Link -->
+        @if(file_exists(public_path('build/manifest.webmanifest')))
+            <link rel="manifest" href="{{ asset('build/manifest.webmanifest') }}">
+        @elseif(file_exists(public_path('manifest.json')))
+            <link rel="manifest" href="{{ asset('manifest.json') }}">
+        @endif
+        
         <!-- Icons -->
         <link rel="icon" type="image/jpg" href="{{ asset('icon.jpg') }}">
         <link rel="shortcut icon" type="image/jpg" href="{{ asset('icon.jpg') }}">
@@ -234,6 +249,82 @@
                 });
             }
         });
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button or banner
+            showInstallPrompt();
+        });
+        
+        function showInstallPrompt() {
+            // Check if already installed or dismissed
+            if (localStorage.getItem('pwa-install-dismissed') === 'true') {
+                return;
+            }
+            
+            const installButton = document.createElement('div');
+            installButton.innerHTML = `
+                <div class="fixed bottom-4 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold">Install Syamail</div>
+                            <div class="text-sm opacity-90">Pasang aplikasi di perangkat Anda</div>
+                        </div>
+                        <div class="flex gap-2 ml-4">
+                            <button onclick="dismissPWAInstall()" class="text-white hover:bg-emerald-700 p-1 rounded">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                            <button onclick="installPWA()" class="bg-white text-emerald-600 px-3 py-1 rounded text-sm font-medium hover:bg-emerald-50">
+                                Install
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(installButton);
+        }
+        
+        function installPWA() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the A2HS prompt');
+                    } else {
+                        console.log('User dismissed the A2HS prompt');
+                    }
+                    deferredPrompt = null;
+                    // Remove install prompt
+                    const prompt = document.querySelector('.fixed.bottom-4.right-4');
+                    if (prompt) prompt.remove();
+                });
+            }
+        }
+        
+        function dismissPWAInstall() {
+            localStorage.setItem('pwa-install-dismissed', 'true');
+            const prompt = document.querySelector('.fixed.bottom-4.right-4');
+            if (prompt) prompt.remove();
+        }
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
         </script>
     </body>
 </html>
