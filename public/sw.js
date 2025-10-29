@@ -1,1 +1,91 @@
-if(!self.define){let e,s={};const n=(n,t)=>(n=new URL(n+".js",t).href,s[n]||new Promise(s=>{if("document"in self){const e=document.createElement("script");e.src=n,e.onload=s,document.head.appendChild(e)}else e=n,importScripts(n),s()}).then(()=>{let e=s[n];if(!e)throw new Error(`Module ${n} didn’t register its module`);return e}));self.define=(t,i)=>{const c=e||("document"in self?document.currentScript.src:"")||location.href;if(s[c])return;let o={};const a=e=>n(e,c),r={module:{uri:c},exports:o,require:a};s[c]=Promise.all(t.map(e=>r[e]||a(e))).then(e=>(i(...e),o))}}define(["./workbox-239d0d27"],function(e){"use strict";self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"build/assets/app-CHnNvzj9.js",revision:null},{url:"build/assets/app-u1qTE33y.css",revision:null},{url:"build/registerSW.js",revision:"2d094791c49e920331981a2d203b8cdb"},{url:"build/manifest.webmanifest",revision:"94fb01e42c188a7adeca91a65bc1e263"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(/^https:\/\/fonts\.googleapis\.com\/.*/i,new e.CacheFirst({cacheName:"google-fonts-cache",plugins:[new e.ExpirationPlugin({maxEntries:10,maxAgeSeconds:31536e3})]}),"GET"),e.registerRoute(/^https:\/\/fonts\.gstatic\.com\/.*/i,new e.CacheFirst({cacheName:"gstatic-fonts-cache",plugins:[new e.ExpirationPlugin({maxEntries:10,maxAgeSeconds:31536e3})]}),"GET"),e.registerRoute(/\.(?:php|html)$/,new e.NetworkFirst({cacheName:"html-cache",plugins:[new e.ExpirationPlugin({maxEntries:50,maxAgeSeconds:86400})]}),"GET"),e.registerRoute(/\/$/,new e.NetworkFirst({cacheName:"page-cache",plugins:[new e.ExpirationPlugin({maxEntries:20,maxAgeSeconds:7200})]}),"GET")});
+const CACHE_NAME = 'syamail-v1';
+const urlsToCache = [
+  '/',
+  '/offline',
+  '/css/app.css',
+  '/build/assets/app-CHnNvzj9.js',
+  '/build/manifest.webmanifest',
+  '/build/registerSW.js',
+  '/workbox-239d0d27.js',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/manifest.json',
+  'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
+];
+
+// Install event - cache files
+self.addEventListener('install', event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(async cache => {
+        console.log('Cache opened');
+        // Add items one-by-one and tolerate failures so install doesn't fail entirely
+        await Promise.all(urlsToCache.map(async (u) => {
+          try {
+            await cache.add(u);
+          } catch (err) {
+            console.warn('Failed to cache', u, err && err.message ? err.message : err);
+          }
+        }));
+      })
+  );
+  self.skipWaiting();
+});
+
+// Activate event - clean old caches
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(cacheName => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+// Fetch event - serve from cache, fallback to network
+self.addEventListener('fetch', event => {
+  event.respondWith(
+    caches.match(event.request)
+      .then(response => {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+
+        return fetch(event.request).then(
+          response => {
+            // Check if we received a valid response
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            // Clone the response
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                // Don't cache if the URL has certain patterns
+                if (!event.request.url.includes('/api/') && 
+                    !event.request.url.includes('/admin/') &&
+                    event.request.method === 'GET') {
+                  cache.put(event.request, responseToCache);
+                }
+              });
+
+            return response;
+          }
+        ).catch(() => {
+          // Network failed, try to serve offline page
+          if (event.request.mode === 'navigate') {
+            return caches.match('/offline');
+          }
+        });
+      })
+  );
+});

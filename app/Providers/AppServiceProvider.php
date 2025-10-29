@@ -29,6 +29,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        if(config('app.env') !== 'local') {
+            URL::forceScheme('https');
+        }
         //
     }
 

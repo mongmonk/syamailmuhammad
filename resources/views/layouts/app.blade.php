@@ -16,18 +16,30 @@
         <meta name="apple-mobile-web-app-title" content="Syamail">
         <meta name="application-name" content="Syamail">
         <meta name="msapplication-TileColor" content="#4f46e5">
+        <meta name="display-mode" content="standalone">
+        <meta name="orientation" content="portrait">
         
-        <!-- PWA Manifest Link -->
-        @if(file_exists(public_path('build/manifest.webmanifest')))
-            <link rel="manifest" href="{{ asset('build/manifest.webmanifest') }}">
-        @elseif(file_exists(public_path('manifest.json')))
-            <link rel="manifest" href="{{ asset('manifest.json') }}">
-        @endif
+    <!-- PWA Manifest Link -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+        
+        <!-- PWA Status Bar -->
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#4f46e5">
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#4f46e5">
         
         <!-- Icons -->
         <link rel="icon" type="image/jpg" href="{{ asset('icon.jpg') }}">
         <link rel="shortcut icon" type="image/jpg" href="{{ asset('icon.jpg') }}">
         <link rel="apple-touch-icon" href="{{ asset('icon.jpg') }}">
+        <link rel="apple-touch-icon" sizes="152x152" href="{{ asset('icon.jpg') }}">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('icon.jpg') }}">
+        <link rel="apple-touch-icon" sizes="167x167" href="{{ asset('icon.jpg') }}">
+        
+        <!-- iOS Splash Screen Images -->
+        <link rel="apple-touch-startup-image" href="{{ asset('icon.jpg') }}" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+        <link rel="apple-touch-startup-image" href="{{ asset('icon.jpg') }}" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+        <link rel="apple-touch-startup-image" href="{{ asset('icon.jpg') }}" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3)">
+        <link rel="apple-touch-startup-image" href="{{ asset('icon.jpg') }}" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)">
         <link rel="icon" sizes="32x32" href="{{ asset('icon.jpg') }}">
         <link rel="icon" sizes="16x16" href="{{ asset('icon.jpg') }}">
         
@@ -251,14 +263,40 @@
         });
 
         // PWA Install Prompt
-        let deferredPrompt;
+        let deferredPrompt = null;
         
+        // Listen for beforeinstallprompt event
         window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt event triggered');
+            // Prevent Chrome 67 and earlier from automatically showing the prompt
             e.preventDefault();
+            // Stash the event so it can be triggered later
             deferredPrompt = e;
-            
-            // Show install button or banner
-            showInstallPrompt();
+            // Check if not already installed
+            if (!isInStandaloneMode()) {
+                showInstallPrompt();
+            }
+        });
+
+        // Check if app is installed
+        function isInStandaloneMode() {
+            return (window.matchMedia('(display-mode: standalone)').matches) || 
+                   (window.navigator.standalone) || // for iOS
+                   document.referrer.includes('android-app://');
+        }
+        
+        // Listen for appinstalled event
+        window.addEventListener('appinstalled', (e) => {
+            console.log('PWA was installed');
+            // Clear the deferredPrompt
+            deferredPrompt = null;
+            // Hide the install prompt if visible
+            const prompt = document.querySelector('.pwa-install-prompt');
+            if (prompt) {
+                prompt.remove();
+            }
+            // Save to localStorage that app was installed
+            localStorage.setItem('pwa-installed', 'true');
         });
         
         function showInstallPrompt() {
@@ -267,7 +305,14 @@
                 return;
             }
             
+            // Remove existing prompt if any
+            const existingPrompt = document.querySelector('.pwa-install-prompt');
+            if (existingPrompt) {
+                existingPrompt.remove();
+            }
+            
             const installButton = document.createElement('div');
+            installButton.className = 'pwa-install-prompt';
             installButton.innerHTML = `
                 <div class="fixed bottom-4 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
                     <div class="flex items-center justify-between">
@@ -276,12 +321,12 @@
                             <div class="text-sm opacity-90">Pasang aplikasi di perangkat Anda</div>
                         </div>
                         <div class="flex gap-2 ml-4">
-                            <button onclick="dismissPWAInstall()" class="text-white hover:bg-emerald-700 p-1 rounded">
+                            <button type="button" onclick="dismissPWAInstall()" class="text-white hover:bg-emerald-700 p-1 rounded">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
                             </button>
-                            <button onclick="installPWA()" class="bg-white text-emerald-600 px-3 py-1 rounded text-sm font-medium hover:bg-emerald-50">
+                            <button type="button" onclick="installPWA()" class="bg-white text-emerald-600 px-3 py-1 rounded text-sm font-medium hover:bg-emerald-50">
                                 Install
                             </button>
                         </div>
@@ -291,40 +336,200 @@
             document.body.appendChild(installButton);
         }
         
-        function installPWA() {
+        async function installPWA() {
+            console.log('installPWA called');
+            
+            // Handle iOS Safari
+            if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+                alert('Untuk menginstal di iOS: \n1. Ketuk ikon Share/Bagikan\n2. Scroll ke bawah\n3. Ketuk "Add to Home Screen"');
+                return;
+            }
+
+            // Handle Chrome/Edge/Other browsers
             if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
+                try {
+                    // Show the prompt
+                    await deferredPrompt.prompt();
+                    console.log('Install prompt shown');
+                    
+                    // Wait for the user to respond to the prompt
+                    const choiceResult = await deferredPrompt.userChoice;
+                    console.log('User choice:', choiceResult.outcome);
+                    
                     if (choiceResult.outcome === 'accepted') {
-                        console.log('User accepted the A2HS prompt');
+                        console.log('User accepted the installation');
                     } else {
-                        console.log('User dismissed the A2HS prompt');
+                        console.log('User dismissed the installation');
                     }
+                } catch (err) {
+                    console.error('Error during PWA installation:', err);
+                    // If prompt fails, try manual installation
+                    const isChrome = /Chrome/.test(navigator.userAgent);
+                    if (isChrome) {
+                        alert('Untuk menginstal manual:\n1. Klik titik tiga di kanan atas Chrome (⋮)\n2. Pilih "Install Syamail"');
+                    }
+                } finally {
+                    // Clear the prompt
                     deferredPrompt = null;
-                    // Remove install prompt
-                    const prompt = document.querySelector('.fixed.bottom-4.right-4');
-                    if (prompt) prompt.remove();
-                });
+                    
+                    // Remove install button
+                    const prompt = document.querySelector('.pwa-install-prompt');
+                    if (prompt) {
+                        prompt.remove();
+                    }
+                }
+            } else {
+                console.log('No installation prompt available, showing manual instructions');
+                // Show manual installation instructions
+                const isChrome = /Chrome/.test(navigator.userAgent);
+                if (isChrome) {
+                    alert('Untuk menginstal:\n1. Klik titik tiga di kanan atas Chrome (⋮)\n2. Pilih "Install Syamail"');
+                }
             }
         }
         
         function dismissPWAInstall() {
             localStorage.setItem('pwa-install-dismissed', 'true');
-            const prompt = document.querySelector('.fixed.bottom-4.right-4');
-            if (prompt) prompt.remove();
+            const prompt = document.querySelector('.pwa-install-prompt');
+            if (prompt) {
+                prompt.remove();
+            }
         }
-        // Service Worker Registration
+        // Check if running as standalone PWA
+        function isPWA() {
+            return window.matchMedia('(display-mode: standalone)').matches ||
+                   window.navigator.standalone ||
+                   document.referrer.includes('android-app://') ||
+                   window.matchMedia('(display-mode: fullscreen)').matches ||
+                   window.matchMedia('(display-mode: minimal-ui)').matches;
+        }
+
+        // Show install button for Safari on iOS
+        function showIOSInstall() {
+            const installButton = document.createElement('div');
+            installButton.className = 'pwa-install-prompt';
+            installButton.innerHTML = `
+                <div class="fixed bottom-4 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <div class="font-semibold">Install Syamail di iOS</div>
+                            <div class="text-sm opacity-90">1. Ketuk ikon Share/Bagikan<br>2. Pilih "Add to Home Screen"</div>
+                        </div>
+                        <div class="flex gap-2 ml-4">
+                            <button type="button" onclick="dismissPWAInstall()" class="text-white hover:bg-emerald-700 p-1 rounded">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(installButton);
+        }
+
+        // Function to check browser and show appropriate install UI
+        function checkInstallability() {
+            // Get browser info
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            const isPWAInstalled = isPWA();
+            
+            console.log('Checking installability:', { 
+                isIOS, 
+                isSafari, 
+                isPWA: isPWAInstalled,
+                hasServiceWorker: 'serviceWorker' in navigator,
+                hasBeforeInstallPrompt: !!deferredPrompt,
+                isHttps: location.protocol === 'https:',
+                displayMode: window.matchMedia('(display-mode: standalone)').matches ? 'standalone' : 'browser'
+            });
+            
+            if (isPWAInstalled) {
+                console.log('Already installed as PWA');
+                return;
+            }
+
+            if (isIOS) {
+                console.log('iOS device detected, showing Safari install instructions');
+                showIOSInstall();
+            } else if (!deferredPrompt) {
+                console.log('Creating manual install button');
+                const installDiv = document.createElement('div');
+                installDiv.className = 'pwa-install-prompt';
+                installDiv.innerHTML = `
+                    <div class="fixed bottom-4 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold">Install Syamail</div>
+                                <div class="text-sm opacity-90">Pasang aplikasi di perangkat Anda</div>
+                            </div>
+                            <div class="flex gap-2 ml-4">
+                                <button type="button" onclick="dismissPWAInstall()" class="text-white hover:bg-emerald-700 p-1 rounded">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                                <button type="button" onclick="installPWA()" class="bg-white text-emerald-600 px-3 py-1 rounded text-sm font-medium hover:bg-emerald-50">
+                                    Install
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(installDiv);
+            }
+        }
+
+                // Service Worker Registration
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js', { scope: '/' })
-                    .then((registration) => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch((registrationError) => {
-                        console.log('SW registration failed: ', registrationError);
+            window.addEventListener('load', async () => {
+                try {
+                    if (document.location.protocol === 'http:') {
+                        console.log('Service Worker requires HTTPS');
+                        return;
+                    }
+
+                    const registration = await navigator.serviceWorker.register('/sw.js', { 
+                        scope: '/',
+                        updateViaCache: 'none'
                     });
+                    
+                    console.log('SW registered:', registration);
+                    
+                    // Check if already installed
+                    const relList = document.createElement('link').relList;
+                    const manifestSupport = relList && relList.supports && relList.supports('manifest');
+                    const standalone = window.matchMedia('(display-mode: standalone)').matches;
+                    
+                    if (manifestSupport && !standalone) {
+                        // Wait for service worker to be ready
+                        await navigator.serviceWorker.ready;
+                        console.log('Service Worker is ready');
+
+                        // Show install prompt if available
+                        if (deferredPrompt) {
+                            console.log('Install prompt available, showing banner');
+                            showInstallPrompt();
+                        } else {
+                            console.log('No install prompt available, waiting for beforeinstallprompt');
+                            checkInstallability();
+                        }
+                    } else {
+                        console.log('PWA already installed or manifest not supported');
+                    }
+                } catch (error) {
+                    console.error('SW registration failed:', error);
+                }
             });
         }
+        
+        // Initialize PWA checks when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isPWA()) {
+                checkInstallability();
+            }
+        });
         </script>
     </body>
 </html>
