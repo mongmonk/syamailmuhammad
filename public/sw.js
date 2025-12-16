@@ -18,13 +18,18 @@ self.addEventListener('install', event => {
         console.log('Cache opened');
         // Add items one-by-one and tolerate failures so install doesn't fail entirely
         await Promise.all(urlsToCache.map(async (u) => {
-          // Skip invalid URLs or external resources that might fail
-          if (!u.startsWith('http') || u.startsWith(window.location.origin)) {
-            try {
+          try {
+            const url = new URL(u, self.location);
+            
+            // Cache both same-origin and essential external resources
+            if (url.origin === self.location.origin ||
+                u.includes('fonts.googleapis.com')) {
               await cache.add(u);
-            } catch (err) {
-              console.warn('Failed to cache', u, err && err.message ? err.message : err);
+            } else {
+              console.log('Skipping non-essential external resource:', u);
             }
+          } catch (err) {
+            console.warn('Failed to cache', u, err.message);
           }
         }));
       })
@@ -72,12 +77,22 @@ self.addEventListener('fetch', event => {
               .then(cache => {
                 // Don't cache if the URL has certain patterns
                 const url = new URL(event.request.url);
-                if (url.protocol.startsWith('http') &&
-                    !event.request.url.includes('/api/') &&
-                    !event.request.url.includes('/admin/') &&
-                    !event.request.url.includes('/auth/login') &&
-                    event.request.method === 'GET' &&
-                    !url.protocol.startsWith('chrome-extension')) {
+                
+                // Cache criteria:
+                // 1. Same-origin OR essential external resources
+                // 2. GET requests only
+                // 3. Exclude sensitive paths
+                const isCacheable = (
+                  (url.origin === self.location.origin ||
+                   url.href.includes('fonts.googleapis.com')) &&
+                  event.request.method === 'GET' &&
+                  !url.pathname.startsWith('/api/') &&
+                  !url.pathname.startsWith('/admin/') &&
+                  !url.pathname.startsWith('/auth/login') &&
+                  !url.protocol.startsWith('chrome-extension')
+                );
+                
+                if (isCacheable) {
                  cache.put(event.request, responseToCache);
                }
               });
