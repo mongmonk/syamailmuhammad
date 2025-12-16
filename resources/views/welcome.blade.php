@@ -104,18 +104,10 @@
       </div>
 
       <!-- Sticky CTA kecil (desktop) -->
-      <div class="hidden md:block fixed right-4 bottom-4 z-40">
+      <div class="fixed right-4  bottom-[calc(4rem+20px)] z-40">
         <a href="{{ 'https://api.whatsapp.com/send?phone=' . $waAdmin . '&text=' . $waText }}" id="cta-float" class="inline-flex items-center px-4 py-2 rounded-full bg-emerald-600 text-white shadow-lg hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition">
           Hubungi Admin
         </a>
-      </div>
-
-      <!-- Sticky CTA bar (mobile) -->
-      <div class="md:hidden fixed inset-x-0 bottom-0 z-40 bg-white/95 backdrop-blur border-t border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
-          <a href="{{ 'https://api.whatsapp.com/send?phone=' . \App\Support\PhoneUtil::normalize(config('app.contact_phone')) . '&text=' . rawurlencode('Assalamualaikum kak... Saya ingin berlangganan kitab ' . config('app.name') . '. tolong dibantu') }}" class="px-7 py-3 rounded-xl bg-white text-emerald-700 font-semibold shadow-lg hover:bg-emerald-50 ring-1 ring-emerald-200" aria-label="Dapatkan akses via WhatsApp admin">Dapatkan Akses</a>
-          <a href="{{ route('chapters.index') }}" class="px-4 py-2 rounded-lg bg-emerald-600 text-white font-semibold shadow hover:bg-emerald-700">Mulai Membaca</a>
-        </div>
       </div>
     </div>
   </section>

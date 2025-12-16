@@ -314,7 +314,7 @@
             const installButton = document.createElement('div');
             installButton.className = 'pwa-install-prompt';
             installButton.innerHTML = `
-                <div class="fixed bottom-4 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+                <div class="fixed bottom-1 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="font-semibold">Install Syamail</div>
@@ -409,7 +409,7 @@
             const installButton = document.createElement('div');
             installButton.className = 'pwa-install-prompt';
             installButton.innerHTML = `
-                <div class="fixed bottom-4 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+                <div class="fixed bottom-1 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
                     <div class="flex items-center justify-between">
                         <div>
                             <div class="font-semibold">Install Syamail di iOS</div>
@@ -458,7 +458,7 @@
                 const installDiv = document.createElement('div');
                 installDiv.className = 'pwa-install-prompt';
                 installDiv.innerHTML = `
-                    <div class="fixed bottom-4 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
+                    <div class="fixed bottom-1 right-4 bg-emerald-600 text-white p-4 rounded-lg shadow-lg z-50 max-w-sm">
                         <div class="flex items-center justify-between">
                             <div>
                                 <div class="font-semibold">Install Syamail</div>

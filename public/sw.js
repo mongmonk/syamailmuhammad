@@ -71,8 +71,9 @@ self.addEventListener('fetch', event => {
             caches.open(CACHE_NAME)
               .then(cache => {
                 // Don't cache if the URL has certain patterns
-                if (!event.request.url.includes('/api/') && 
+                if (!event.request.url.includes('/api/') &&
                     !event.request.url.includes('/admin/') &&
+                    !event.request.url.includes('/auth/login') &&
                     event.request.method === 'GET') {
                   cache.put(event.request, responseToCache);
                 }
