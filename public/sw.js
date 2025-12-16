@@ -3,9 +3,6 @@ const urlsToCache = [
   '/',
   '/offline',
   '/css/app.css',
-  '/build/assets/app-CHnNvzj9.js',
-  '/build/manifest.webmanifest',
-  '/build/registerSW.js',
   '/workbox-239d0d27.js',
   '/icon-192.png',
   '/icon-512.png',
@@ -21,10 +18,13 @@ self.addEventListener('install', event => {
         console.log('Cache opened');
         // Add items one-by-one and tolerate failures so install doesn't fail entirely
         await Promise.all(urlsToCache.map(async (u) => {
-          try {
-            await cache.add(u);
-          } catch (err) {
-            console.warn('Failed to cache', u, err && err.message ? err.message : err);
+          // Skip invalid URLs or external resources that might fail
+          if (!u.startsWith('http') || u.startsWith(window.location.origin)) {
+            try {
+              await cache.add(u);
+            } catch (err) {
+              console.warn('Failed to cache', u, err && err.message ? err.message : err);
+            }
           }
         }));
       })
@@ -71,12 +71,15 @@ self.addEventListener('fetch', event => {
             caches.open(CACHE_NAME)
               .then(cache => {
                 // Don't cache if the URL has certain patterns
-                if (!event.request.url.includes('/api/') &&
+                const url = new URL(event.request.url);
+                if (url.protocol.startsWith('http') &&
+                    !event.request.url.includes('/api/') &&
                     !event.request.url.includes('/admin/') &&
                     !event.request.url.includes('/auth/login') &&
-                    event.request.method === 'GET') {
-                  cache.put(event.request, responseToCache);
-                }
+                    event.request.method === 'GET' &&
+                    !url.protocol.startsWith('chrome-extension')) {
+                 cache.put(event.request, responseToCache);
+               }
               });
 
             return response;
